@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import DrillTimer from "./DrillTimer";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Shield, Activity, BookOpen, Trophy, Users, Dumbbell, Video, Flame, Apple, BarChart2 } from "lucide-react";
 
@@ -52,6 +53,8 @@ export default function Layout() {
           <iframe src={`https://www.youtube.com/embed/Me6IG-fTQDI?autoplay=1&loop=1&playlist=Me6IG-fTQDI&controls=0&rel=0&mute=${muted ? 1 : 0}`} allow="autoplay; encrypted-media" title="Music 1" />
         </div>
       )}
+
+      <DrillTimer />
 
       {/* Music Toggle Button */}
       <button
