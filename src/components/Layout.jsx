@@ -1,5 +1,14 @@
+import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Shield, Activity, BookOpen, Trophy, Users, Dumbbell, Video, Flame, Apple } from "lucide-react";
+
+const WARRIOR_IMAGES = [
+  "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/9af62c059_2845.png",
+  "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/3d1213c6a_2825.jpg",
+  "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/96befed01_2826.jpg",
+  "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/112a5c2cc_2827.jpg",
+  "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/6d582ea34_2837.png",
+];
 
 const NAV = [
   { path: "/", label: "Command", icon: Shield },
@@ -15,11 +24,27 @@ const NAV = [
 
 export default function Layout() {
   const { pathname } = useLocation();
+  const [imgIndex, setImgIndex] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setImgIndex(i => (i + 1) % WARRIOR_IMAGES.length), 8000);
+    return () => clearInterval(t);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-commander-dark flex flex-col">
+    <div className="min-h-screen bg-commander-dark flex flex-col relative">
+      {/* Rotating Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        {WARRIOR_IMAGES.map((src, i) => (
+          <div key={src} className="absolute inset-0 transition-opacity duration-2000"
+            style={{ opacity: i === imgIndex ? 1 : 0 }}>
+            <img src={src} alt="" className="w-full h-full object-cover object-top" />
+          </div>
+        ))}
+        <div className="absolute inset-0 bg-commander-dark/88" />
+      </div>
       {/* Top Header */}
-      <header className="bg-commander-surface border-b border-commander-border px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+      <header className="bg-commander-surface/95 backdrop-blur border-b border-commander-border px-4 py-3 flex items-center justify-between sticky top-0 z-50 relative z-50">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-commander-red rounded-lg flex items-center justify-center">
             <Shield className="w-4 h-4 text-white" />
@@ -35,12 +60,12 @@ export default function Layout() {
       </header>
 
       {/* Page Content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto relative z-10">
         <Outlet />
       </main>
 
       {/* Bottom Nav */}
-      <nav className="bg-commander-surface border-t border-commander-border px-2 py-2 sticky bottom-0 z-50">
+      <nav className="bg-commander-surface/95 backdrop-blur border-t border-commander-border px-2 py-2 sticky bottom-0 z-50">
         <div className="flex justify-around">
           {NAV.map(({ path, label, icon: Icon }) => {
             const active = pathname === path;
