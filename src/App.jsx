@@ -13,6 +13,7 @@ import Recovery from './pages/Recovery';
 import Competition from './pages/Competition';
 import JuniorTracker from './pages/JuniorTracker';
 import VideoVault from './pages/VideoVault';
+import Blueprint from './pages/Blueprint';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -49,6 +50,7 @@ const AuthenticatedApp = () => {
         <Route path="/competition" element={<Competition />} />
         <Route path="/junior" element={<JuniorTracker />} />
         <Route path="/vault" element={<VideoVault />} />
+        <Route path="/blueprint" element={<Blueprint />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
