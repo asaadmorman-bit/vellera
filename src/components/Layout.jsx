@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Shield, Activity, BookOpen, Trophy, Users, Dumbbell, Video, Flame, Apple, BarChart2 } from "lucide-react";
 
@@ -26,6 +26,8 @@ const NAV = [
 export default function Layout() {
   const { pathname } = useLocation();
   const [imgIndex, setImgIndex] = useState(0);
+  const [musicOn, setMusicOn] = useState(false);
+  const [muted, setMuted] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setImgIndex(i => (i + 1) % WARRIOR_IMAGES.length), 8000);
@@ -44,11 +46,21 @@ export default function Layout() {
         ))}
         <div className="absolute inset-0 bg-commander-dark/60" />
       </div>
-      {/* Hidden Background Music */}
-      <div className="fixed -bottom-full -right-full" style={{opacity: 0, pointerEvents: 'none', width: 1, height: 1, overflow: 'hidden'}}>
-        <iframe src="https://www.youtube.com/embed/Me6IG-fTQDI?autoplay=1&loop=1&playlist=Me6IG-fTQDI&controls=0&rel=0&mute=0" allow="autoplay; encrypted-media" title="Motivation Music 1" />
-        <iframe src="https://www.youtube.com/embed/qTNcs3NSYWI?autoplay=1&loop=1&playlist=qTNcs3NSYWI&controls=0&rel=0&mute=0" allow="autoplay; encrypted-media" title="Motivation Music 2" />
-      </div>
+      {/* Background Music iframes - shown after user clicks play */}
+      {musicOn && (
+        <div style={{ position: 'fixed', left: -9999, top: -9999, width: 1, height: 1, overflow: 'hidden' }}>
+          <iframe src={`https://www.youtube.com/embed/Me6IG-fTQDI?autoplay=1&loop=1&playlist=Me6IG-fTQDI&controls=0&rel=0&mute=${muted ? 1 : 0}`} allow="autoplay; encrypted-media" title="Music 1" />
+        </div>
+      )}
+
+      {/* Music Toggle Button */}
+      <button
+        onClick={() => { if (!musicOn) { setMusicOn(true); } else { setMuted(m => !m); } }}
+        className="fixed bottom-20 right-3 z-50 w-9 h-9 rounded-full bg-commander-surface border border-commander-border flex items-center justify-center text-base shadow-lg hover:border-commander-red transition-all"
+        title={musicOn ? (muted ? 'Unmute music' : 'Mute music') : 'Play music'}
+      >
+        {!musicOn ? '🎵' : muted ? '🔇' : '🔊'}
+      </button>
 
       {/* Top Header */}
       <header className="bg-commander-surface/95 backdrop-blur border-b border-commander-border px-4 py-3 flex items-center justify-between sticky top-0 z-50 relative z-50">
