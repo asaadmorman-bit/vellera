@@ -278,23 +278,43 @@ const SON_SUPPS = [
 ];
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────
-export default function Blueprint() {
-  const [athlete, setAthlete] = useState("dad");
-  const [section, setSection] = useState("nutrition");
+const DAD_IMAGES = [
+  "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/9af62c059_2845.png",
+  "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/3d1213c6a_2825.jpg",
+  "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/96befed01_2826.jpg",
+  "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/112a5c2cc_2827.jpg",
+];
+const SON_IMAGE = "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/6d582ea34_2837.png";
 
-  const isDad = athlete === "dad";
-  const profile = isDad ? DAD : SON;
-  const meals = isDad ? DAD_MEALS : SON_MEALS;
-  const plan = isDad ? DAD_WEEKLY : SON_WEEKLY;
-  const supps = isDad ? DAD_SUPPS : SON_SUPPS;
+export default function Blueprint() {
+  const [imgIndex, setImgIndex] = useState(0);
+
+  // cycle dad images every 5s
+  useEffect(() => {
+    const t = setInterval(() => setImgIndex(i => (i + 1) % DAD_IMAGES.length), 5000);
+    return () => clearInterval(t);
+  }, []);
+  const heroImg = isDad ? DAD_IMAGES[imgIndex] : SON_IMAGE;
 
   return (
     <div className="p-4 space-y-4 max-w-lg mx-auto pb-24">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-gray-900 via-commander-surface to-red-950 border border-commander-red rounded-xl p-4">
-        <p className="text-xs text-commander-red uppercase tracking-widest font-bold mb-1">Family Legacy Blueprint</p>
-        <h1 className="text-white text-2xl font-black tracking-tight">Performance Formula</h1>
-        <p className="text-commander-muted text-xs mt-1">The code to becoming who you're destined to be. Father & son. Warrior lineage.</p>
+      <div className="relative rounded-xl overflow-hidden border border-commander-red" style={{ minHeight: 220 }}>
+        <img src={heroImg} alt="warrior" className="absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/55 to-black/95" />
+        <div className="relative p-4 flex flex-col justify-end" style={{ minHeight: 220 }}>
+          <p className="text-xs text-commander-red uppercase tracking-widest font-bold mb-1">Family Legacy Blueprint</p>
+          <h1 className="text-white text-2xl font-black tracking-tight">Performance Formula</h1>
+          <p className="text-white/60 text-xs mt-1">The code to becoming who you're destined to be. Father & son. Warrior lineage.</p>
+          {isDad && (
+            <div className="flex gap-1 mt-3">
+              {DAD_IMAGES.map((_, i) => (
+                <button key={i} onClick={() => setImgIndex(i)}
+                  className={`h-1 rounded-full transition-all ${i === imgIndex ? "bg-commander-red w-5" : "bg-white/30 w-2"}`} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Athlete Toggle */}

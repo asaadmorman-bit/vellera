@@ -66,29 +66,37 @@ export default function Dashboard() {
 
   const waterTarget = Math.round(250 / 2 + 32 * (todayClasses.length > 0 ? 1.5 : 0));
 
+  const WARRIOR_IMAGES = [
+    "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/9af62c059_2845.png",
+    "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/3d1213c6a_2825.jpg",
+    "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/96befed01_2826.jpg",
+    "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/112a5c2cc_2827.jpg",
+  ];
+  const heroImg = WARRIOR_IMAGES[today.getDay() % WARRIOR_IMAGES.length];
+
   return (
     <div className="p-4 space-y-4 max-w-lg mx-auto pb-24">
-      {/* Countdown Hero */}
-      <div className="bg-commander-surface border border-commander-border rounded-xl p-4">
-        <div className="flex items-end justify-between mb-3">
-          <div>
-            <p className="text-commander-muted text-xs uppercase tracking-widest">July 18, 2026 Competition</p>
-            <p className="text-white text-4xl font-black font-mono">{daysLeft} <span className="text-lg text-commander-muted font-normal">days</span></p>
+      {/* Motivational Hero */}
+      <div className="relative rounded-xl overflow-hidden border border-commander-border" style={{ minHeight: 200 }}>
+        <img src={heroImg} alt="warrior" className="absolute inset-0 w-full h-full object-cover object-top" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/90" />
+        <div className="relative p-4 flex flex-col justify-end" style={{ minHeight: 200 }}>
+          <p className="text-xs text-commander-red uppercase tracking-widest font-bold mb-1">July 18, 2026 Competition</p>
+          <p className="text-white text-5xl font-black font-mono leading-none">{daysLeft}</p>
+          <p className="text-white/70 text-sm mb-2">days until the mat calls</p>
+          <div className="w-full bg-white/20 rounded-full h-2 mb-1">
+            <div className="bg-commander-red h-2 rounded-full transition-all" style={{ width: `${progress}%` }} />
           </div>
-          <div className="text-right">
-            <p className={`text-xs font-bold uppercase tracking-wider ${phase.color}`}>Phase {phase.phase}: {phase.label}</p>
-            <p className="text-commander-muted text-xs mt-0.5">{sessionsLeft} mat sessions remaining</p>
+          <div className="flex items-center justify-between">
+            <p className="text-white/60 text-xs">{progress}% complete · <span className={phase.color}>{phase.label}</span></p>
+            <p className="text-white/60 text-xs">{sessionsLeft} sessions left</p>
           </div>
+          {daysLeft < 14 && (
+            <div className="mt-2 bg-red-900/60 border border-red-700 rounded-lg px-3 py-2">
+              <p className="text-red-300 text-xs font-bold">⚠️ TAPER: Reduce lifting 50%. Home mobility only.</p>
+            </div>
+          )}
         </div>
-        <div className="w-full bg-gray-800 rounded-full h-2 mb-1">
-          <div className="bg-commander-red h-2 rounded-full transition-all" style={{ width: `${progress}%` }} />
-        </div>
-        <p className="text-xs text-commander-muted">{progress}% of prep camp complete · <span className={phase.color}>{phase.focus}</span></p>
-        {daysLeft < 14 && (
-          <div className="mt-2 bg-red-900/40 border border-red-700 rounded-lg px-3 py-2">
-            <p className="text-red-300 text-xs font-bold">⚠️ TAPER: Reduce lifting 50%. Home mobility only.</p>
-          </div>
-        )}
       </div>
 
       {/* Safety Valve */}
