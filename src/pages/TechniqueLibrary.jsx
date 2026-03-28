@@ -21,6 +21,30 @@ const BLUE_BELT_BLUEPRINT = [
   { name: "Takedown Defense (Sprawl)", category: "MMA Fundamentals", description: "Protecting the hips on the feet", notes: "" },
 ];
 
+const MASTERY_TIERS = [
+  { min: 0,   label: "Novice",       bg: "bg-gray-800",   text: "text-gray-400",   border: "border-gray-700" },
+  { min: 10,  label: "Beginner",     bg: "bg-blue-950",   text: "text-blue-300",  border: "border-blue-800" },
+  { min: 20,  label: "Intermediate", bg: "bg-teal-950",   text: "text-teal-300",  border: "border-teal-700" },
+  { min: 40,  label: "Advanced",     bg: "bg-yellow-950", text: "text-yellow-300",border: "border-yellow-700" },
+  { min: 60,  label: "Expert",       bg: "bg-orange-950", text: "text-orange-300",border: "border-orange-700" },
+  { min: 100, label: "Master",       bg: "bg-red-950",    text: "text-red-300",   border: "border-red-600" },
+];
+
+function getMasteryTier(xp) {
+  let tier = MASTERY_TIERS[0];
+  for (const t of MASTERY_TIERS) { if ((xp || 0) >= t.min) tier = t; }
+  return tier;
+}
+
+function MasteryBadge({ xp }) {
+  const tier = getMasteryTier(xp);
+  return (
+    <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${tier.bg} ${tier.text} ${tier.border}`}>
+      {tier.label}
+    </span>
+  );
+}
+
 function XPBar({ xp, level }) {
   const xpInLevel = xp % 20;
   const pct = (xpInLevel / 20) * 100;
@@ -130,13 +154,15 @@ export default function TechniqueLibrary() {
         <div className="space-y-2">
           {filtered.map(tech => (
             <div key={tech.id} className={`bg-commander-surface border rounded-xl p-4 transition-all ${tech.mastery_level >= 5 ? "border-yellow-700" : "border-commander-border"}`}>
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between">                
                 <div className="flex-1">
-                  <p className="text-white font-semibold text-sm">{tech.name}</p>
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <p className="text-white font-semibold text-sm">{tech.name}</p>
+                    <MasteryBadge xp={tech.xp || 0} />
+                  </div>
                   {tech.description && <p className="text-commander-muted text-xs mt-0.5">{tech.description}</p>}
                   {tech.notes && <p className="text-yellow-600 text-xs mt-0.5 italic">{tech.notes}</p>}
                 </div>
-                {tech.mastery_level >= 5 && <span className="text-xs bg-yellow-800 text-yellow-300 px-2 py-0.5 rounded-full ml-2">MASTERED</span>}
               </div>
               <XPBar xp={tech.xp || 0} level={tech.mastery_level || 0} />
               {tech.last_drilled && <p className="text-xs text-commander-muted mt-1">Last drilled: {tech.last_drilled}</p>}
