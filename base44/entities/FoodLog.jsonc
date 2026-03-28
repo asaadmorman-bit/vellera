@@ -1,0 +1,78 @@
+{
+  "name": "FoodLog",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "meal_type": {
+      "type": "string",
+      "enum": [
+        "Morning Fuel",
+        "Midday Power",
+        "Pre-Mat Snack",
+        "Post-Mat Recovery",
+        "Dinner",
+        "Night Snack"
+      ],
+      "title": "Meal Type"
+    },
+    "photo_url": {
+      "type": "string",
+      "title": "Meal Photo URL"
+    },
+    "food_description": {
+      "type": "string",
+      "title": "AI Food Description"
+    },
+    "calories": {
+      "type": "number",
+      "title": "Estimated Calories"
+    },
+    "protein_g": {
+      "type": "number",
+      "title": "Protein (g)"
+    },
+    "carbs_g": {
+      "type": "number",
+      "title": "Carbs (g)"
+    },
+    "fat_g": {
+      "type": "number",
+      "title": "Fat (g)"
+    },
+    "water_oz": {
+      "type": "number",
+      "title": "Water (oz)"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "AI Confidence"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes"
+    },
+    "athlete": {
+      "type": "string",
+      "enum": [
+        "dad",
+        "son"
+      ],
+      "title": "Athlete",
+      "default": "dad"
+    }
+  },
+  "required": [
+    "date",
+    "meal_type",
+    "athlete"
+  ]
+}
