@@ -41,8 +41,19 @@ export default function Layout() {
             <img src={src} alt="" className="w-full h-full object-cover object-top" />
           </div>
         ))}
-        <div className="absolute inset-0 bg-commander-dark/88" />
+        <div className="absolute inset-0 bg-commander-dark/60" />
       </div>
+      {/* YouTube Music Player */}
+      <div className="fixed bottom-16 right-3 z-40">
+        <iframe
+          src="https://www.youtube.com/embed/Me6IG-fTQDI?autoplay=1&loop=1&playlist=Me6IG-fTQDI&controls=1&rel=0"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          className="w-48 h-28 rounded-xl border border-commander-border opacity-90 shadow-2xl"
+          title="Motivation Music"
+        />
+      </div>
+
       {/* Top Header */}
       <header className="bg-commander-surface/95 backdrop-blur border-b border-commander-border px-4 py-3 flex items-center justify-between sticky top-0 z-50 relative z-50">
         <div className="flex items-center gap-2">
