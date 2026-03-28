@@ -43,13 +43,11 @@ export default function Layout() {
         ))}
         <div className="absolute inset-0 bg-commander-dark/60" />
       </div>
-      {/* YouTube Music Player */}
-      <div className="fixed bottom-16 right-3 z-40">
+      {/* Hidden Background Music */}
+      <div className="fixed -bottom-full -right-full" style={{opacity: 0, pointerEvents: 'none', width: 1, height: 1, overflow: 'hidden'}}>
         <iframe
-          src="https://www.youtube.com/embed/Me6IG-fTQDI?autoplay=1&loop=1&playlist=Me6IG-fTQDI&controls=1&rel=0&mute=0"
+          src="https://www.youtube.com/embed/Me6IG-fTQDI?autoplay=1&loop=1&playlist=Me6IG-fTQDI&controls=0&rel=0&mute=0"
           allow="autoplay; encrypted-media"
-          allowFullScreen
-          className="w-48 h-28 rounded-xl border border-commander-border opacity-90 shadow-2xl"
           title="Motivation Music"
         />
       </div>
