@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Flame, Droplets, Zap, Shield, Star, Target, Apple, Dumbbell, ChevronDown, ChevronUp } from "lucide-react";
 
 // ─── ATHLETE PROFILES ───────────────────────────────────────────
