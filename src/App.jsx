@@ -16,6 +16,7 @@ import VideoVault from './pages/VideoVault';
 import Blueprint from './pages/Blueprint';
 import FoodLog from './pages/FoodLog';
 import Progress from './pages/Progress';
+import SparringPartners from './pages/SparringPartners';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -55,6 +56,7 @@ const AuthenticatedApp = () => {
         <Route path="/blueprint" element={<Blueprint />} />
         <Route path="/food" element={<FoodLog />} />
         <Route path="/progress" element={<Progress />} />
+        <Route path="/partners" element={<SparringPartners />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

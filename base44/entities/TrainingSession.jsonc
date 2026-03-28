@@ -60,6 +60,14 @@
       ],
       "title": "Did you cook your opponent?"
     },
+    "sparring_partner_id": {
+      "type": "string",
+      "title": "Sparring Partner ID"
+    },
+    "sparring_partner_name": {
+      "type": "string",
+      "title": "Sparring Partner Name"
+    },
     "successful_escapes": {
       "type": "array",
       "items": {

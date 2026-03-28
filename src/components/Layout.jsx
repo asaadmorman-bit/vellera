@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import DrillTimer from "./DrillTimer";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Shield, Activity, BookOpen, Trophy, Users, Dumbbell, Video, Flame, Apple, BarChart2 } from "lucide-react";
+import { Shield, Activity, BookOpen, Trophy, Users, Dumbbell, Video, Flame, Apple, BarChart2, Swords } from "lucide-react";
 
 const WARRIOR_IMAGES = [
   "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/9af62c059_2845.png",
@@ -22,6 +22,7 @@ const NAV = [
   { path: "/blueprint", label: "Blueprint", icon: Flame },
   { path: "/food", label: "Fuel", icon: Apple },
   { path: "/progress", label: "XP", icon: BarChart2 },
+  { path: "/partners", label: "Partners", icon: Swords },
 ];
 
 export default function Layout() {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { Save, Plus } from "lucide-react";
@@ -57,6 +57,8 @@ function BiometricEntry({ onSaved }) {
 
 // --- Session Journal ---
 function SessionJournal() {
+  const [partners, setPartners] = useState([]);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0],
     session_type: "BJJ Foundations",
@@ -74,11 +76,16 @@ function SessionJournal() {
     lifting_exercises: "",
     xp_awarded_technique: "",
     xp_amount: 5,
+    sparring_partner_id: "",
+    sparring_partner_name: "",
     wins: "",
     lessons: "",
     session_notes: "",
   });
-  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    base44.entities.SparringPartner.list("-created_date", 100).then(setPartners);
+  }, []);
 
   const toggle = (field, val) => {
     setForm(f => ({
@@ -89,7 +96,12 @@ function SessionJournal() {
 
   const save = async () => {
     setSaving(true);
-    await base44.entities.TrainingSession.create(form);
+    const sessionData = { ...form };
+    if (form.sparring_partner_id) {
+      const p = partners.find(x => x.id === form.sparring_partner_id);
+      if (p) sessionData.sparring_partner_name = p.name;
+    }
+    await base44.entities.TrainingSession.create(sessionData);
     // Award XP to technique
     if (form.xp_awarded_technique) {
       const techs = await base44.entities.Technique.filter({ name: form.xp_awarded_technique });
@@ -217,6 +229,18 @@ function SessionJournal() {
             <input type="checkbox" checked={form.mma_taken_down} onChange={e => setForm(f => ({ ...f, mma_taken_down: e.target.checked }))} className="accent-red-600" />
             <span className="text-sm text-white">Got taken down?</span>
           </label>
+        </div>
+      )}
+
+      {/* Sparring Partner */}
+      {!isLifting && (
+        <div>
+          <label className="text-xs text-commander-muted block mb-1">Sparring Partner (optional)</label>
+          <select value={form.sparring_partner_id} onChange={e => setForm(f => ({ ...f, sparring_partner_id: e.target.value }))}
+            className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm">
+            <option value="">— No partner selected —</option>
+            {partners.map(p => <option key={p.id} value={p.id}>{p.name}{p.nickname ? ` "${p.nickname}"` : ""}</option>)}
+          </select>
         </div>
       )}
 

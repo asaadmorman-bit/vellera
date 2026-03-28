@@ -1,0 +1,40 @@
+{
+  "name": "SparringPartner",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Name"
+    },
+    "nickname": {
+      "type": "string",
+      "title": "Nickname"
+    },
+    "gym": {
+      "type": "string",
+      "title": "Home Gym"
+    },
+    "belt_level": {
+      "type": "string",
+      "enum": [
+        "White",
+        "Blue",
+        "Purple",
+        "Brown",
+        "Black"
+      ],
+      "title": "Belt Level"
+    },
+    "weight_class": {
+      "type": "string",
+      "title": "Weight Class / lbs"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes (style, tendencies, etc.)"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
