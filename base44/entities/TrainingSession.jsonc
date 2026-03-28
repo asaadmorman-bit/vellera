@@ -35,6 +35,12 @@
       "type": "number",
       "title": "Duration (mins)"
     },
+    "intensity": {
+      "type": "number",
+      "title": "Intensity (1-10)",
+      "minimum": 1,
+      "maximum": 10
+    },
     "gas_level": {
       "type": "number",
       "title": "Gas Level (1-10)",
@@ -82,12 +88,24 @@
       "type": "number",
       "title": "Wall Work Rounds"
     },
+    "lifting_exercises": {
+      "type": "string",
+      "title": "Lifting Exercises (sets x reps)"
+    },
     "injury_notes": {
       "type": "array",
       "items": {
         "type": "string"
       },
       "title": "Pain/Injury Areas"
+    },
+    "wins": {
+      "type": "string",
+      "title": "Wins \u2014 What worked today?"
+    },
+    "lessons": {
+      "type": "string",
+      "title": "Lessons \u2014 What to improve?"
     },
     "session_notes": {
       "type": "string",

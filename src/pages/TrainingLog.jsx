@@ -62,6 +62,7 @@ function SessionJournal() {
     session_type: "BJJ Foundations",
     location: "The Lab",
     duration_minutes: "",
+    intensity: 5,
     gas_level: 5,
     gas_remaining_pct: 60,
     pressure_effectiveness: "Partial (Transitioned often)",
@@ -70,8 +71,11 @@ function SessionJournal() {
     mma_striking_accuracy: "",
     mma_taken_down: false,
     wall_work_rounds: "",
+    lifting_exercises: "",
     xp_awarded_technique: "",
     xp_amount: 5,
+    wins: "",
+    lessons: "",
     session_notes: "",
   });
   const [saving, setSaving] = useState(false);
@@ -95,13 +99,13 @@ function SessionJournal() {
         await base44.entities.Technique.update(techs[0].id, { xp: newXp, mastery_level: level, last_drilled: form.date });
       }
     }
-    // 43yo rule: check 3 consecutive high-gas days
     toast.success("Session logged. Stay hydrated, Commander. 🥋");
-    setForm(f => ({ ...f, session_notes: "", injury_notes: [], successful_escapes: [] }));
+    setForm(f => ({ ...f, session_notes: "", injury_notes: [], successful_escapes: [], wins: "", lessons: "", lifting_exercises: "" }));
     setSaving(false);
   };
 
   const isMMA = form.session_type === "MMA Wrestling";
+  const isLifting = form.session_type === "S&C Strength";
 
   return (
     <div className="bg-commander-surface border border-commander-border rounded-xl p-4 space-y-4">
@@ -138,13 +142,22 @@ function SessionJournal() {
         </div>
       </div>
 
-      {/* Gas Level */}
+      {/* Intensity */}
+      <div>
+        <label className="text-xs text-commander-muted block mb-1">Intensity (1=easy, 10=max effort): <span className="text-blue-400 font-bold">{form.intensity}</span></label>
+        <input type="range" min={1} max={10} value={form.intensity} onChange={e => setForm(f => ({ ...f, intensity: Number(e.target.value) }))}
+          className="w-full accent-blue-600" />
+      </div>
+
+      {/* Gas Level (BJJ only) */}
+      {!isLifting && (
       <div>
         <label className="text-xs text-commander-muted block mb-1">Gas Level Used (1=fresh, 10=gassed out): <span className="text-commander-red font-bold">{form.gas_level}</span></label>
         <input type="range" min={1} max={10} value={form.gas_level} onChange={e => setForm(f => ({ ...f, gas_level: Number(e.target.value) }))}
           className="w-full accent-red-600" />
         {form.gas_level >= 8 && <p className="text-red-400 text-xs mt-1">⚠️ 43yo Rule: 3 consecutive high-gas days triggers mandatory Mobility Day.</p>}
       </div>
+      )}
 
       {/* Pressure */}
       <div>
@@ -159,7 +172,8 @@ function SessionJournal() {
         </div>
       </div>
 
-      {/* Escapes */}
+      {/* Techniques Drilled (BJJ/MMA) */}
+      {!isLifting && (
       <div>
         <label className="text-xs text-commander-muted block mb-2">Successful Escapes Today</label>
         <div className="flex flex-wrap gap-2">
@@ -171,6 +185,17 @@ function SessionJournal() {
           ))}
         </div>
       </div>
+      )}
+
+      {/* Lifting Exercises */}
+      {isLifting && (
+      <div>
+        <label className="text-xs text-commander-muted block mb-1">Exercises & Sets × Reps</label>
+        <textarea value={form.lifting_exercises} onChange={e => setForm(f => ({ ...f, lifting_exercises: e.target.value }))}
+          rows={4} placeholder={"e.g.\nDeadlift: 3×5 @ 315lbs\nBench: 4×8 @ 185lbs\nDB Row: 3×10 @ 80lbs"}
+          className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm font-mono resize-none" />
+      </div>
+      )}
 
       {/* MMA specific */}
       {isMMA && (
@@ -220,12 +245,26 @@ function SessionJournal() {
         {form.injury_notes.includes("Fingers/Grips") && <p className="text-yellow-400 text-xs mt-1">⚠️ Grip fatigue: 2 logs this week may swap Gi session for No-Gi.</p>}
       </div>
 
-      {/* Notes */}
-      <div>
-        <label className="text-xs text-commander-muted block mb-1">Session Notes</label>
-        <textarea value={form.session_notes} onChange={e => setForm(f => ({ ...f, session_notes: e.target.value }))}
-          rows={3} placeholder="What worked? What didn't? Coach feedback..."
-          className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm resize-none" />
+      {/* Wins & Lessons */}
+      <div className="space-y-3">
+        <div>
+          <label className="text-xs font-bold text-green-400 block mb-1">🏆 Wins — What worked today?</label>
+          <textarea value={form.wins} onChange={e => setForm(f => ({ ...f, wins: e.target.value }))}
+            rows={2} placeholder="e.g. Finally hit the elbow escape clean 3x, stayed composed under pressure..."
+            className="w-full bg-green-950/20 border border-green-800 rounded-lg px-3 py-2 text-white text-sm resize-none placeholder:text-green-900" />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-yellow-400 block mb-1">📚 Lessons — What to improve?</label>
+          <textarea value={form.lessons} onChange={e => setForm(f => ({ ...f, lessons: e.target.value }))}
+            rows={2} placeholder="e.g. Need to tuck elbows tighter in guard, hips too high on top pressure..."
+            className="w-full bg-yellow-950/20 border border-yellow-800 rounded-lg px-3 py-2 text-white text-sm resize-none placeholder:text-yellow-900" />
+        </div>
+        <div>
+          <label className="text-xs text-commander-muted block mb-1">Additional Notes</label>
+          <textarea value={form.session_notes} onChange={e => setForm(f => ({ ...f, session_notes: e.target.value }))}
+            rows={2} placeholder="Coach feedback, injuries, anything else..."
+            className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm resize-none" />
+        </div>
       </div>
 
       <button onClick={save} disabled={saving} className="w-full bg-commander-red text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-all disabled:opacity-50">
