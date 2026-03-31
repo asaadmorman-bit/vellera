@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Save, Plus, ArrowLeft } from "lucide-react";
 import { FormError, SubmitButton, RequiredField } from "../components/FormValidation";
 import SelectDrawer from "../components/SelectDrawer";
+import { usePullToRefresh } from "../hooks/usePullToRefresh";
+import { useTabStack } from "../hooks/useTabStack";
 
 const ESCAPE_OPTIONS = ["Trap & Roll (Bridge)", "Shrimping to Guard", "Elbow Escape (Mount)", "Posturing in Closed Guard", "Knee-Shield (Z-Guard)", "Wall Walk (MMA)", "Technical Stand-up"];
 const INJURY_AREAS = ["Lower Back", "Neck", "Fingers/Grips", "Knees", "Shoulders", "Hips", "Ribs"];
@@ -13,9 +16,21 @@ const LOCATIONS = ["The Lab", "Work Gym", "Crunch Fitness", "Home"];
 // --- Biometric Entry ---
 function BiometricEntry({ onSaved }) {
   const [form, setForm] = useState({ recovery_pct: "", hrv: "", rhr: "", sleep_performance: "", body_battery: "", weight_lbs: "", caloric_intake: "" });
-  const [saving, setSaving] = useState(false);
-
   const [errors, setErrors] = useState({});
+
+  const mutation = useMutation({
+    mutationFn: async (data) => {
+      return base44.entities.BiometricLog.create(data);
+    },
+    onSuccess: () => {
+      toast.success("Morning metrics saved!");
+      setForm({ recovery_pct: "", hrv: "", rhr: "", sleep_performance: "", body_battery: "", weight_lbs: "", caloric_intake: "" });
+      onSaved();
+    },
+    onError: (error) => {
+      toast.error("Failed to save metrics");
+    },
+  });
 
   const validate = () => {
     const newErrors = {};
@@ -28,15 +43,10 @@ function BiometricEntry({ onSaved }) {
 
   const save = async () => {
     if (!validate()) return;
-    setSaving(true);
     const today = new Date().toISOString().split("T")[0];
     const data = { date: today };
     Object.entries(form).forEach(([k, v]) => { if (v !== "") data[k] = Number(v); });
-    await base44.entities.BiometricLog.create(data);
-    toast.success("Morning metrics saved!");
-    setForm({ recovery_pct: "", hrv: "", rhr: "", sleep_performance: "", body_battery: "", weight_lbs: "", caloric_intake: "" });
-    onSaved();
-    setSaving(false);
+    mutation.mutate(data);
   };
 
   const field = (label, key, placeholder) => (
@@ -64,7 +74,7 @@ function BiometricEntry({ onSaved }) {
         {field("Garmin Body Battery", "body_battery", "e.g. 45")}
         {field("Weight (lbs)", "weight_lbs", "e.g. 249")}
       </div>
-      <SubmitButton onClick={save} disabled={false} loading={saving} label="Save Morning Metrics" />
+      <SubmitButton onClick={save} disabled={false} loading={mutation.isPending} label="Save Morning Metrics" />
     </div>
   );
 }
@@ -72,7 +82,6 @@ function BiometricEntry({ onSaved }) {
 // --- Session Journal ---
 function SessionJournal() {
   const [partners, setPartners] = useState([]);
-  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0],
     session_type: "BJJ Foundations",
@@ -108,26 +117,35 @@ function SessionJournal() {
     }));
   };
 
+  const mutation = useMutation({
+    mutationFn: async (sessionData) => {
+      await base44.entities.TrainingSession.create(sessionData);
+      // Award XP to technique
+      if (sessionData.xp_awarded_technique) {
+        const techs = await base44.entities.Technique.filter({ name: sessionData.xp_awarded_technique });
+        if (techs[0]) {
+          const newXp = (techs[0].xp || 0) + (sessionData.xp_amount || 5);
+          const level = Math.min(5, Math.floor(newXp / 20));
+          await base44.entities.Technique.update(techs[0].id, { xp: newXp, mastery_level: level, last_drilled: sessionData.date });
+        }
+      }
+    },
+    onSuccess: () => {
+      toast.success("Session logged. Stay hydrated, Commander. 🥋");
+      setForm(f => ({ ...f, session_notes: "", injury_notes: [], successful_escapes: [], wins: "", lessons: "", lifting_exercises: "" }));
+    },
+    onError: () => {
+      toast.error("Failed to log session");
+    },
+  });
+
   const save = async () => {
-    setSaving(true);
     const sessionData = { ...form };
     if (form.sparring_partner_id) {
       const p = partners.find(x => x.id === form.sparring_partner_id);
       if (p) sessionData.sparring_partner_name = p.name;
     }
-    await base44.entities.TrainingSession.create(sessionData);
-    // Award XP to technique
-    if (form.xp_awarded_technique) {
-      const techs = await base44.entities.Technique.filter({ name: form.xp_awarded_technique });
-      if (techs[0]) {
-        const newXp = (techs[0].xp || 0) + (form.xp_amount || 5);
-        const level = Math.min(5, Math.floor(newXp / 20));
-        await base44.entities.Technique.update(techs[0].id, { xp: newXp, mastery_level: level, last_drilled: form.date });
-      }
-    }
-    toast.success("Session logged. Stay hydrated, Commander. 🥋");
-    setForm(f => ({ ...f, session_notes: "", injury_notes: [], successful_escapes: [], wins: "", lessons: "", lifting_exercises: "" }));
-    setSaving(false);
+    mutation.mutate(sessionData);
   };
 
   const [errors, setErrors] = useState({});
@@ -323,18 +341,41 @@ function SessionJournal() {
         </div>
       </div>
 
-      <SubmitButton onClick={() => { if (validate()) save(); }} disabled={false} loading={saving} label="Save to Mat-Commander DB" />
+      <SubmitButton onClick={() => { if (validate()) save(); }} disabled={false} loading={mutation.isPending} label="Save to Mat-Commander DB" />
     </div>
   );
 }
 
 export default function TrainingLog() {
+  const containerRef = useRef(null);
   const [tab, setTab] = useState("session");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const isDeepLinked = window.location.pathname === "/training";
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      setRefreshKey(k => k + 1);
+      // Data will auto-refetch via component re-render
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const pullRef = usePullToRefresh(handleRefresh);
+  useTabStack(containerRef);
+
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top">
+    <div ref={containerRef} className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top overflow-auto h-screen">
+      {refreshing && (
+        <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-40">
+          <div className="bg-commander-surface border border-commander-border rounded-full px-4 py-2 flex items-center gap-2">
+            <div className="w-3 h-3 border-2 border-commander-red border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs text-white font-semibold">Refreshing...</span>
+          </div>
+        </div>
+      )}
       <div className="flex items-center gap-2 mb-2">
         {isDeepLinked && (
           <a href="/" className="text-commander-muted hover:text-white transition-all touch-target-min" title="Go back">

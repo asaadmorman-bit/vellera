@@ -1,6 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 import SafetyValve from "../components/SafetyValve";
+import { usePullToRefresh } from "../hooks/usePullToRefresh";
+import { useTabStack } from "../hooks/useTabStack";
 import RecoveryPerformanceWidget from "../components/RecoveryPerformanceWidget";
 import DailyFocus from "../components/DailyFocus";
 import WeightTracker from "../components/WeightTracker";
@@ -37,10 +40,12 @@ function getCompPhase(daysLeft) {
 }
 
 export default function Dashboard() {
+  const containerRef = useRef(null);
   const [todayLog, setTodayLog] = useState(null);
   const [weekLogs, setWeekLogs] = useState([]);
   const [recentSessions, setRecentSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const today = new Date();
   const daysLeft = Math.max(0, Math.ceil((COMP_DATE - today) / 86400000));
@@ -53,19 +58,30 @@ export default function Dashboard() {
   const sc = SC_PROMPT[dayOfWeek];
   const todayClasses = SCHEDULE[dayOfWeek] || [];
 
-  useEffect(() => {
-    const todayStr = today.toISOString().split("T")[0];
-    Promise.all([
-      base44.entities.BiometricLog.filter({ date: todayStr }),
-      base44.entities.BiometricLog.list("-date", 7),
-      base44.entities.TrainingSession.list("-date", 5),
-    ]).then(([tl, wl, rs]) => {
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const todayStr = today.toISOString().split("T")[0];
+      const [tl, wl, rs] = await Promise.all([
+        base44.entities.BiometricLog.filter({ date: todayStr }),
+        base44.entities.BiometricLog.list("-date", 7),
+        base44.entities.TrainingSession.list("-date", 5),
+      ]);
       setTodayLog(tl[0] || null);
       setWeekLogs(wl);
       setRecentSessions(rs);
-      setLoading(false);
-    });
+      toast.success("Data refreshed");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    handleRefresh();
   }, []);
+
+  const pullRef = usePullToRefresh(handleRefresh);
+  useTabStack(containerRef);
 
   const waterTarget = Math.round(250 / 2 + 32 * (todayClasses.length > 0 ? 1.5 : 0));
 
@@ -78,7 +94,17 @@ export default function Dashboard() {
   const heroImg = WARRIOR_IMAGES[today.getDay() % WARRIOR_IMAGES.length];
 
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24">
+    <div ref={containerRef} className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top overflow-auto h-screen">
+      {/* Refresh Indicator */}
+      {refreshing && (
+        <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-40">
+          <div className="bg-commander-surface border border-commander-border rounded-full px-4 py-2 flex items-center gap-2">
+            <div className="w-3 h-3 border-2 border-commander-red border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs text-white font-semibold">Refreshing...</span>
+          </div>
+        </div>
+      )}
+
       {/* Motivational Hero */}
       <div className="relative rounded-xl overflow-hidden border border-commander-border" style={{ minHeight: 200 }}>
         <img src={heroImg} alt="warrior" className="absolute inset-0 w-full h-full object-cover object-top" />

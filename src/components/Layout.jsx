@@ -99,7 +99,7 @@ export default function Layout() {
       </header>
 
       {/* Page Content */}
-      <main className="flex-1 overflow-auto relative z-10">
+      <main className="flex-1 overflow-hidden relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}

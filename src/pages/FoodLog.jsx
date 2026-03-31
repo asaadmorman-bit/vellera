@@ -236,7 +236,7 @@ Return JSON with: food_description (string, describe what you see), calories (nu
   const proteinRemaining = target.protein_g - totals.protein_g;
 
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top">
+    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top overflow-auto h-screen">
       <div className="flex items-center gap-2 mb-2">
         <a href="/" className="text-commander-muted hover:text-white transition-all touch-target-min" title="Go back">
           <ArrowLeft className="w-5 h-5" />
