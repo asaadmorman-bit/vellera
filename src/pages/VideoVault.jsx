@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { Upload, Play, Zap, Target, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import SelectDrawer from "../components/SelectDrawer";
 
 const KNOWN_TECHNIQUES = [
   "Trap and Roll (Bridge)", "Shrimping to Guard", "Elbow Escape (Mount)",
@@ -263,13 +264,12 @@ Respond in JSON with keys: techniques_tagged (array of strings matching exactly 
             <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
               className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm" />
           </div>
-          <div>
-            <label className="text-xs text-commander-muted block mb-1">Session Type</label>
-            <select value={form.session_type} onChange={e => setForm(f => ({ ...f, session_type: e.target.value }))}
-              className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm">
-              {["BJJ Foundations", "MMA Wrestling", "No-Gi", "Masters Class", "Open Mat"].map(t => <option key={t}>{t}</option>)}
-            </select>
-          </div>
+          <SelectDrawer
+            label="Session Type"
+            value={form.session_type}
+            options={["BJJ Foundations", "MMA Wrestling", "No-Gi", "Masters Class", "Open Mat"]}
+            onChange={(val) => setForm(f => ({ ...f, session_type: val }))}
+          />
         </div>
 
         {/* Image upload for AI */}

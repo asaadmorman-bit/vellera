@@ -21,14 +21,20 @@ export default function Settings() {
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
     try {
-      // TODO: Implement account deletion backend function
+      const response = await fetch('/api/deleteUserAccount', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to delete account');
       toast.success("Account deleted successfully");
-      // Redirect to logout or login
-      window.location.href = "/";
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
     } catch (error) {
-      toast.error("Failed to delete account");
+      toast.error(error.message || "Failed to delete account");
     } finally {
       setIsDeleting(false);
+      setShowDeleteDialog(false);
     }
   };
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { Plus, Users, ChevronLeft, Dumbbell, Calendar } from "lucide-react";
+import SelectDrawer from "../components/SelectDrawer";
 
 const BELT_COLORS = {
   White: "bg-gray-200 text-gray-800",
@@ -189,10 +190,12 @@ export default function SparringPartners() {
               className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm" />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <select value={form.belt_level} onChange={e => setForm(f => ({ ...f, belt_level: e.target.value }))}
-              className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm">
-              {["White", "Blue", "Purple", "Brown", "Black"].map(b => <option key={b}>{b}</option>)}
-            </select>
+            <SelectDrawer
+              label="Belt Level"
+              value={form.belt_level}
+              options={["White", "Blue", "Purple", "Brown", "Black"]}
+              onChange={(val) => setForm(f => ({ ...f, belt_level: val }))}
+            />
             <input value={form.gym} onChange={e => setForm(f => ({ ...f, gym: e.target.value }))} placeholder="Home gym"
               className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm" />
           </div>

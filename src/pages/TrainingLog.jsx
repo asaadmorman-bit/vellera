@@ -22,7 +22,11 @@ function BiometricEntry({ onSaved }) {
     mutationFn: async (data) => {
       return base44.entities.BiometricLog.create(data);
     },
-    onSuccess: () => {
+    onMutate: async (data) => {
+      // Optimistic update
+      return { data };
+    },
+    onSuccess: (data, variables, context) => {
       toast.success("Morning metrics saved!");
       setForm({ recovery_pct: "", hrv: "", rhr: "", sleep_performance: "", body_battery: "", weight_lbs: "", caloric_intake: "" });
       onSaved();
@@ -130,7 +134,11 @@ function SessionJournal() {
         }
       }
     },
-    onSuccess: () => {
+    onMutate: async (sessionData) => {
+      // Optimistic update
+      return { sessionData };
+    },
+    onSuccess: (data, variables, context) => {
       toast.success("Session logged. Stay hydrated, Commander. 🥋");
       setForm(f => ({ ...f, session_notes: "", injury_notes: [], successful_escapes: [], wins: "", lessons: "", lifting_exercises: "" }));
     },

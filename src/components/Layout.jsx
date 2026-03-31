@@ -114,7 +114,7 @@ export default function Layout() {
       </main>
 
       {/* Bottom Nav - 5 tabs */}
-      <nav className="bg-commander-surface/95 backdrop-blur border-t border-commander-border px-2 py-2 sticky bottom-0 z-50 safe-area-bottom">
+      <nav className="bg-commander-surface/95 backdrop-blur border-t border-commander-border px-2 py-2 fixed bottom-0 left-0 right-0 z-50 safe-area-bottom">
         <div className="flex justify-around">
           {PRIMARY_NAV.map(({ path, label, icon: Icon }) => {
             const active = pathname === path;
