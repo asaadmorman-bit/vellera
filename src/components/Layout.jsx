@@ -20,11 +20,11 @@ const WARRIOR_IMAGES = [
 ];
 
 const PRIMARY_NAV = [
-  { path: "/", label: "Home", icon: Shield },
-  { path: "/training", label: "Training", icon: Activity },
-  { path: "/techniques", label: "Matrix", icon: BookOpen },
-  { path: "/blueprint", label: "Blueprint", icon: Flame },
-  { path: "/combat", label: "Combat", icon: Zap, glow: true },
+  { path: "/", label: "Home", icon: Shield, id: "home" },
+  { path: "/training", label: "Training", icon: Activity, id: "training" },
+  { path: "/techniques", label: "Matrix", icon: BookOpen, id: "techniques" },
+  { path: "/blueprint", label: "Blueprint", icon: Flame, id: "blueprint" },
+  { path: "/combat", label: "Combat", icon: Zap, id: "combat", glow: true },
 ];
 
 const MORE_NAV = [
@@ -112,23 +112,23 @@ export default function Layout() {
       {/* Bottom Nav - 5 tabs */}
       <nav className="bg-commander-surface/95 backdrop-blur border-t border-commander-border px-2 py-2 fixed bottom-0 left-0 right-0 z-50 safe-area-bottom">
         <div className="flex justify-around">
-          {PRIMARY_NAV.map(({ path, label, icon: Icon }) => {
+          {PRIMARY_NAV.map(({ path, label, icon: Icon, glow }) => {
             const active = pathname === path;
             return (
               <Link
                 key={path}
                 to={path}
                 className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all touch-target-min ${
-                  active ? (icon === Zap ? "text-red-500 drop-shadow-lg drop-shadow-red-500/50" : "text-commander-red") : "text-commander-muted hover:text-white"
+                  active ? (glow ? "text-red-500 drop-shadow-lg drop-shadow-red-500/50" : "text-commander-red") : "text-commander-muted hover:text-white"
                 }`}
               >
                 <Icon className="w-5 h-5" />
                 <span className="text-xs font-medium">{label}</span>
               </Link>
             );
-          })}
-          {/* More button */}
-          <button
+            })}
+            {/* More button */}
+            <button
             onClick={() => setMoreOpen(true)}
             className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all text-commander-muted hover:text-white touch-target-min"
           >
