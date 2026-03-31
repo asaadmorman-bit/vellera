@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { Save, Plus, ArrowLeft } from "lucide-react";
 import { FormError, SubmitButton, RequiredField } from "../components/FormValidation";
+import SelectDrawer from "../components/SelectDrawer";
 
 const ESCAPE_OPTIONS = ["Trap & Roll (Bridge)", "Shrimping to Guard", "Elbow Escape (Mount)", "Posturing in Closed Guard", "Knee-Shield (Z-Guard)", "Wall Walk (MMA)", "Technical Stand-up"];
 const INJURY_AREAS = ["Lower Back", "Neck", "Fingers/Grips", "Knees", "Shoulders", "Hips", "Ribs"];
@@ -168,20 +169,20 @@ function SessionJournal() {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs text-commander-muted block mb-1">Session Type</label>
-          <select value={form.session_type} onChange={e => setForm(f => ({ ...f, session_type: e.target.value }))}
-            className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm">
-            {SESSION_TYPES.map(t => <option key={t}>{t}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="text-xs text-commander-muted block mb-1">Location</label>
-          <select value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
-            className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm">
-            {LOCATIONS.map(l => <option key={l}>{l}</option>)}
-          </select>
-        </div>
+        <SelectDrawer
+          label="Session Type"
+          value={form.session_type}
+          options={SESSION_TYPES}
+          onChange={(val) => setForm((f) => ({ ...f, session_type: val }))}
+          required
+        />
+        <SelectDrawer
+          label="Location"
+          value={form.location}
+          options={LOCATIONS}
+          onChange={(val) => setForm((f) => ({ ...f, location: val }))}
+          required
+        />
       </div>
 
       {/* Intensity */}
@@ -264,14 +265,15 @@ function SessionJournal() {
 
       {/* Sparring Partner */}
       {!isLifting && (
-        <div>
-          <label className="text-xs text-commander-muted block mb-1">Sparring Partner (optional)</label>
-          <select value={form.sparring_partner_id} onChange={e => setForm(f => ({ ...f, sparring_partner_id: e.target.value }))}
-            className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm">
-            <option value="">— No partner selected —</option>
-            {partners.map(p => <option key={p.id} value={p.id}>{p.name}{p.nickname ? ` "${p.nickname}"` : ""}</option>)}
-          </select>
-        </div>
+        <SelectDrawer
+          label="Sparring Partner (optional)"
+          value={form.sparring_partner_id ? partners.find(p => p.id === form.sparring_partner_id)?.name || "" : ""}
+          options={["", ...partners.map(p => `${p.name}${p.nickname ? ` "${p.nickname}"` : ""}`)]}
+          onChange={(val) => {
+            const p = partners.find(x => `${x.name}${x.nickname ? ` "${x.nickname}"` : ""}` === val);
+            setForm((f) => ({ ...f, sparring_partner_id: p?.id || "" }));
+          }}
+        />
       )}
 
       {/* XP Award */}

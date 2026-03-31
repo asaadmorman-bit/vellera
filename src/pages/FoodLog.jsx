@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { Camera, Loader2, ChevronDown, ChevronUp, Droplets, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, ArrowLeft } from "lucide-react";
 import { FormError } from "../components/FormValidation";
+import SelectDrawer from "../components/SelectDrawer";
 
 // Daily targets from Blueprint
 const TARGETS = {
@@ -311,16 +312,15 @@ Return JSON with: food_description (string, describe what you see), calories (nu
         <p className="text-xs text-commander-muted uppercase tracking-widest">Log a Meal with AI Vision</p>
 
         <div className="grid grid-cols-2 gap-2">
+          <SelectDrawer
+            label="Meal Type"
+            value={mealType}
+            options={MEAL_TYPES}
+            onChange={setMealType}
+          />
           <div>
-            <label className="text-xs text-commander-muted block mb-1">Meal Type</label>
-            <select value={mealType} onChange={e => setMealType(e.target.value)}
-              className="w-full bg-gray-800 border border-commander-border rounded-lg px-2 py-2 text-white text-xs">
-              {MEAL_TYPES.map(t => <option key={t}>{t}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-commander-muted block mb-1">Athlete</label>
-            <div className="flex bg-gray-800 border border-commander-border rounded-lg overflow-hidden h-[38px]">
+            <label className="text-xs text-commander-muted block mb-2 font-semibold">Athlete</label>
+            <div className="flex bg-gray-800 border border-commander-border rounded-lg overflow-hidden min-h-[44px]">
               <button onClick={() => setAthlete("dad")} className={`flex-1 text-xs font-bold transition-all ${athlete === "dad" ? "bg-commander-red text-white" : "text-commander-muted"}`}>Dad</button>
               <button onClick={() => setAthlete("son")} className={`flex-1 text-xs font-bold transition-all ${athlete === "son" ? "bg-blue-700 text-white" : "text-commander-muted"}`}>Son</button>
             </div>

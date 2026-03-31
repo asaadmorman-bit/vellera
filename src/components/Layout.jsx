@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import DrillTimer from "./DrillTimer";
 import { Outlet, Link, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerClose,
+} from "@/components/ui/drawer";
 import { Shield, Activity, BookOpen, Trophy, Users, Dumbbell, Video, Flame, Apple, BarChart2, Swords } from "lucide-react";
 
 const WARRIOR_IMAGES = [
@@ -11,18 +19,25 @@ const WARRIOR_IMAGES = [
   "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/6d582ea34_2837.png",
 ];
 
-const NAV = [
-  { path: "/", label: "Command", icon: Shield },
-  { path: "/training", label: "Log Session", icon: Activity },
-  { path: "/techniques", label: "Skill Matrix", icon: BookOpen },
+const PRIMARY_NAV = [
+  { path: "/", label: "Home", icon: Shield },
+  { path: "/training", label: "Training", icon: Activity },
+  { path: "/techniques", label: "Matrix", icon: BookOpen },
+  { path: "/blueprint", label: "Blueprint", icon: Flame },
+];
+
+const MORE_NAV = [
   { path: "/recovery", label: "Recovery", icon: Dumbbell },
   { path: "/competition", label: "Competition", icon: Trophy },
   { path: "/junior", label: "Junior", icon: Users },
   { path: "/vault", label: "Film", icon: Video },
-  { path: "/blueprint", label: "Blueprint", icon: Flame },
   { path: "/food", label: "Fuel", icon: Apple },
   { path: "/progress", label: "XP", icon: BarChart2 },
   { path: "/partners", label: "Partners", icon: Swords },
+  { path: "/hub", label: "Training Hub", icon: BookOpen },
+  { path: "/wellness", label: "Wellness", icon: Apple },
+  { path: "/events", label: "Events", icon: Trophy },
+  { path: "/settings", label: "Settings", icon: Shield },
 ];
 
 export default function Layout() {
@@ -30,6 +45,7 @@ export default function Layout() {
   const [imgIndex, setImgIndex] = useState(0);
   const [musicOn, setMusicOn] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setImgIndex(i => (i + 1) % WARRIOR_IMAGES.length), 8000);
@@ -84,19 +100,29 @@ export default function Layout() {
 
       {/* Page Content */}
       <main className="flex-1 overflow-auto relative z-10">
-        <Outlet />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pathname}
+            initial={{ x: 300, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -300, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
 
-      {/* Bottom Nav */}
-      <nav className="bg-commander-surface/95 backdrop-blur border-t border-commander-border px-2 py-2 sticky bottom-0 z-50">
+      {/* Bottom Nav - 5 tabs */}
+      <nav className="bg-commander-surface/95 backdrop-blur border-t border-commander-border px-2 py-2 sticky bottom-0 z-50 safe-area-bottom">
         <div className="flex justify-around">
-          {NAV.map(({ path, label, icon: Icon }) => {
+          {PRIMARY_NAV.map(({ path, label, icon: Icon }) => {
             const active = pathname === path;
             return (
               <Link
                 key={path}
                 to={path}
-                className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all ${
+                className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all touch-target-min ${
                   active ? "text-commander-red" : "text-commander-muted hover:text-white"
                 }`}
               >
@@ -105,8 +131,43 @@ export default function Layout() {
               </Link>
             );
           })}
+          {/* More button */}
+          <button
+            onClick={() => setMoreOpen(true)}
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all text-commander-muted hover:text-white touch-target-min"
+          >
+            <div className="w-5 h-5 flex items-center justify-center">⋯</div>
+            <span className="text-xs font-medium">More</span>
+          </button>
         </div>
       </nav>
+
+      {/* More Drawer */}
+      <Drawer open={moreOpen} onOpenChange={setMoreOpen}>
+        <DrawerContent className="bg-commander-surface border-t border-commander-border">
+          <DrawerHeader className="border-b border-commander-border">
+            <DrawerTitle className="text-white">More Options</DrawerTitle>
+          </DrawerHeader>
+          <div className="max-h-[60vh] overflow-y-auto pb-4">
+            {MORE_NAV.map(({ path, label, icon: Icon }) => {
+              const active = pathname === path;
+              return (
+                <DrawerClose key={path} asChild>
+                  <Link
+                    to={path}
+                    className={`w-full flex items-center gap-3 px-4 py-3 border-b border-commander-border hover:bg-gray-800 transition-all min-h-[44px] ${
+                      active ? "text-commander-red" : "text-white"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="font-medium">{label}</span>
+                  </Link>
+                </DrawerClose>
+              );
+            })}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

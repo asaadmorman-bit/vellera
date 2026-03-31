@@ -20,6 +20,7 @@ import SparringPartners from './pages/SparringPartners';
 import TrainingHub from './pages/TrainingHub';
 import WellnessTracker from './pages/WellnessTracker';
 import CompetitionsEvents from './pages/CompetitionsEvents';
+import Settings from './pages/Settings';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -63,6 +64,7 @@ const AuthenticatedApp = () => {
         <Route path="/hub" element={<TrainingHub />} />
         <Route path="/wellness" element={<WellnessTracker />} />
         <Route path="/events" element={<CompetitionsEvents />} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
