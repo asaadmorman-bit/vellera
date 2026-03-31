@@ -9,6 +9,8 @@ import PageNotFound from './lib/PageNotFound';
 import Layout from './components/Layout';
 
 const Landing = lazy(() => import('./pages/Landing'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const Welcome = lazy(() => import('./pages/Welcome'));
 const Home = lazy(() => import('./pages/Home'));
 const CombatHub = lazy(() => import('./pages/CombatHub'));
@@ -62,6 +64,8 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/landing" element={<Suspense fallback={<LoadingSpinner />}><Landing /></Suspense>} />
+      <Route path="/terms" element={<Suspense fallback={<LoadingSpinner />}><TermsOfService /></Suspense>} />
+      <Route path="/privacy" element={<Suspense fallback={<LoadingSpinner />}><PrivacyPolicy /></Suspense>} />
       <Route path="/welcome" element={<Suspense fallback={<LoadingSpinner />}><Welcome /></Suspense>} />
       <Route path="/home" element={<Suspense fallback={<LoadingSpinner />}><Home /></Suspense>} />
       <Route path="/combat" element={<Suspense fallback={<LoadingSpinner />}><CombatHub /></Suspense>} />

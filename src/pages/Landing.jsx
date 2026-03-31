@@ -302,9 +302,9 @@ export default function Landing() {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-vellera-blue transition">
+                  <Link to="/privacy" className="hover:text-vellera-blue transition">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -313,9 +313,9 @@ export default function Landing() {
               <p className="font-bold mb-4">Legal</p>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-vellera-blue transition">
+                  <Link to="/terms" className="hover:text-vellera-blue transition">
                     Terms of Service
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a href="#" className="hover:text-vellera-blue transition">
