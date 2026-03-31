@@ -24,8 +24,12 @@ body, html {
 
 :root {
   color-scheme: dark;
-  --background: 222 20% 8%;
-  --foreground: 210 20% 92%;
+  --background: 7 0% 7%;
+  --foreground: 0 0% 95%;
+  --vellera-blue: #00E5FF;
+  --vellera-green: #CCFF00;
+  --vellera-dark: #121212;
+  --vellera-muted: #888888;
   --card: 222 18% 10%;
   --card-foreground: 210 20% 92%;
   --popover: 222 18% 10%;
@@ -93,6 +97,15 @@ body, html {
   --sidebar-border: 240 3.7% 15.9%;
   --sidebar-ring: 217.2 91.2% 59.8%;
 }
+
+/* Vellera Color System */
+.text-vellera-blue { color: #00E5FF; }
+.text-vellera-green { color: #CCFF00; }
+.text-vellera-dark { color: #121212; }
+.text-vellera-muted { color: #888888; }
+.bg-vellera-blue { background-color: #00E5FF; }
+.bg-vellera-green { background-color: #CCFF00; }
+.bg-vellera-dark { background-color: #121212; }
 
 @layer base {
   * {

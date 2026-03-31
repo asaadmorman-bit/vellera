@@ -70,6 +70,10 @@ export default {
         "commander-border": "hsl(var(--commander-border))",
         "commander-red": "hsl(var(--commander-red))",
         "commander-muted": "hsl(var(--commander-muted))",
+        "vellera-blue": "#00E5FF",
+        "vellera-green": "#CCFF00",
+        "vellera-dark": "#121212",
+        "vellera-muted": "#888888",
       },
       keyframes: {
         "accordion-down": {

@@ -9,7 +9,7 @@ import {
   DrawerTitle,
   DrawerClose,
 } from "@/components/ui/drawer";
-import { Shield, Activity, BookOpen, Trophy, Users, Dumbbell, Video, Flame, Apple, BarChart2, Swords } from "lucide-react";
+import { Shield, Activity, BookOpen, Trophy, Users, Dumbbell, Video, Flame, Apple, BarChart2, Swords, Zap } from "lucide-react";
 
 const WARRIOR_IMAGES = [
   "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/9af62c059_2845.png",
@@ -24,6 +24,7 @@ const PRIMARY_NAV = [
   { path: "/training", label: "Training", icon: Activity },
   { path: "/techniques", label: "Matrix", icon: BookOpen },
   { path: "/blueprint", label: "Blueprint", icon: Flame },
+  { path: "/combat", label: "Combat", icon: Zap, glow: true },
 ];
 
 const MORE_NAV = [
@@ -118,7 +119,7 @@ export default function Layout() {
                 key={path}
                 to={path}
                 className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all touch-target-min ${
-                  active ? "text-commander-red" : "text-commander-muted hover:text-white"
+                  active ? (icon === Zap ? "text-red-500 drop-shadow-lg drop-shadow-red-500/50" : "text-commander-red") : "text-commander-muted hover:text-white"
                 }`}
               >
                 <Icon className="w-5 h-5" />
