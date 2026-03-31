@@ -31,6 +31,7 @@ const TrainingHub = lazy(() => import('./pages/TrainingHub'));
 const WellnessTracker = lazy(() => import('./pages/WellnessTracker'));
 const CompetitionsEvents = lazy(() => import('./pages/CompetitionsEvents'));
 const Settings = lazy(() => import('./pages/Settings'));
+const ActiveWorkout = lazy(() => import('./pages/ActiveWorkout'));
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-commander-dark z-50">
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
       <Route path="/terms" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><TermsOfService /></Suspense></PageTransition>} />
       <Route path="/privacy" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><PrivacyPolicy /></Suspense></PageTransition>} />
       <Route path="/welcome" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Welcome /></Suspense></PageTransition>} />
+      <Route path="/workout" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ActiveWorkout /></Suspense></PageTransition>} />
       <Route path="/home" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Home /></Suspense></PageTransition>} />
       <Route path="/combat" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><CombatHub /></Suspense></PageTransition>} />
       <Route element={<TabStackLayout />}>
