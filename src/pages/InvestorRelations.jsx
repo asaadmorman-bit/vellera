@@ -123,7 +123,7 @@ export default function InvestorRelations() {
               <img
                 src="https://media.base44.com/images/public/69c722c665db36b41f55ba9c/f8c8b63ac_Gemini_Generated_Image_l5e1fyl5e1fyl5e1.png"
                 alt="Asaad Morman — Founder"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain bg-gradient-to-br from-vellera-blue/20 to-vellera-green/20"
               />
             </div>
 
