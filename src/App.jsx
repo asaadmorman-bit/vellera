@@ -8,6 +8,7 @@ import { lazy, Suspense } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import Layout from './components/Layout';
 
+const Landing = lazy(() => import('./pages/Landing'));
 const Welcome = lazy(() => import('./pages/Welcome'));
 const Home = lazy(() => import('./pages/Home'));
 const CombatHub = lazy(() => import('./pages/CombatHub'));
@@ -60,6 +61,7 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
+      <Route path="/landing" element={<Suspense fallback={<LoadingSpinner />}><Landing /></Suspense>} />
       <Route path="/welcome" element={<Suspense fallback={<LoadingSpinner />}><Welcome /></Suspense>} />
       <Route path="/home" element={<Suspense fallback={<LoadingSpinner />}><Home /></Suspense>} />
       <Route path="/combat" element={<Suspense fallback={<LoadingSpinner />}><CombatHub /></Suspense>} />
