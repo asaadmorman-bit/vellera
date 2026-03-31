@@ -19,6 +19,7 @@ const WARRIOR_IMAGES = [
   "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/96befed01_2826.jpg",
   "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/112a5c2cc_2827.jpg",
   "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/6d582ea34_2837.png",
+  "https://media.base44.com/images/public/69c722c665db36b41f55ba9c/97927d4ed_Gemini_Generated_Image_ry3411ry3411ry34.png",
 ];
 
 const PRIMARY_NAV = [
