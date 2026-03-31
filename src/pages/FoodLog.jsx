@@ -254,10 +254,14 @@ Return JSON with: food_description (string, describe what you see), calories (nu
       </div>
 
       {/* Date Selector */}
-      <div className="flex items-center gap-3">
-        <label className="text-xs text-commander-muted">Date</label>
-        <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-          className="flex-1 bg-commander-surface border border-commander-border rounded-lg px-3 py-2 text-white text-sm" />
+      <div>
+        <label className="text-xs text-commander-muted block mb-2 font-semibold">Date</label>
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-400 min-h-[44px]"
+        />
       </div>
 
       {/* Daily Macro Rings */}

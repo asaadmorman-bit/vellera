@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { ArrowLeft } from "lucide-react"
+import BackButton from "../components/BackButton";
 
 const RESTORATION_PROTOCOLS = [
   { name: "Open the Book", sets: "10 reps/side", desc: "Lie on your side, knees tucked. Reach top arm over to other side. Opens chest for better breathing." },
@@ -62,9 +62,7 @@ export default function Recovery() {
   return (
     <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top overflow-auto h-screen">
       <div className="flex items-center gap-2 mb-2">
-        <a href="/" className="text-commander-muted hover:text-white transition-all touch-target-min" title="Go back">
-          <ArrowLeft className="w-5 h-5" />
-        </a>
+        <BackButton to="/" />
         <h1 className="text-white text-xl font-black tracking-tight">Recovery Hub</h1>
       </div>
 
