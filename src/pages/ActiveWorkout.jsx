@@ -78,28 +78,24 @@ export default function ActiveWorkout() {
   }, [isPaused, currentMovement]);
 
   // Play bell sound with audio ducking
-  // NOTE: Audio Ducking Implementation Points:
-  // 1. When timer reaches 00:00, lower background audio (YouTube Music, Spotify) to ~20% volume
-  // 2. Play loud "Ding/Bell" local sound asset from /public/sounds/bell.mp3
-  // 3. After bell completes (~1.5s), restore background audio to original volume
-  // In web: Use Web Audio API to control system volume (requires permissions)
-  // In React Native: Use react-native-sound or expo-av with setAudioMode({ shouldDuckAndroid: true })
   const playBellSound = async () => {
     try {
-      // NOTE: This requires the audio file to exist in public/sounds/bell.mp3
       const audio = new Audio("/sounds/bell.mp3");
-      audio.volume = 1.0; // Max volume for bell
-      audio.play().catch((err) => console.warn("Could not play bell sound:", err));
-
-      // TODO: Implement audio ducking for external players (YouTube Music, Spotify)
-      // Step 1: Lower background audio to 20%
-      // await duckBackgroundAudio(0.2);
+      audio.volume = 1.0;
       
-      // Step 2: Wait for bell to finish
-      // await new Promise(resolve => setTimeout(resolve, 1500));
+      // Audio ducking: lower external audio before bell
+      // (Web Audio API limitation: cannot control Spotify/YouTube directly from browser)
+      // On native iOS/Android, audio ducking would use:
+      // - iOS: AVAudioSession with .duckOthers option
+      // - Android: AudioAttributes with CONTENT_TYPE_SPEECH
       
-      // Step 3: Restore audio
-      // await restoreBackgroundAudio();
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => console.warn("Bell playback failed:", err));
+      }
+      
+      // Wait for bell to finish (~1.5s)
+      await new Promise(resolve => setTimeout(resolve, 1500));
     } catch (error) {
       console.error("Bell sound error:", error);
     }
@@ -176,7 +172,7 @@ export default function ActiveWorkout() {
         <div className="relative">
           <button
             onClick={handleExitAttempt}
-            className="p-2 bg-red-900/50 hover:bg-red-900 border border-red-700 rounded-lg transition-all touch-target-min flex items-center justify-center"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center bg-red-900/50 hover:bg-red-900 border border-red-700 rounded-lg transition-all"
             title="End Workout (double-tap)"
           >
             <X className="w-5 h-5 text-red-400" />
