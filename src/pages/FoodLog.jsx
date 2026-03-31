@@ -298,7 +298,7 @@ Return JSON with: food_description (string, describe what you see), calories (nu
           <div className="flex gap-1 ml-auto">
             {[8, 16, 24, 32].map(oz => (
               <button key={oz} onClick={() => setWaterToday(w => Math.min(target.water_oz, w + oz))}
-                className="text-xs bg-cyan-950 border border-cyan-800 text-cyan-400 px-2 py-1.5 rounded-lg hover:bg-cyan-900 transition-all min-h-[40px] flex items-center touch-target-min">
+                className="text-xs bg-cyan-950 border border-cyan-800 text-cyan-400 px-3 py-2 rounded-lg hover:bg-cyan-900 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center">
                 +{oz}oz
               </button>
             ))}
