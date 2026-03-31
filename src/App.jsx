@@ -6,6 +6,8 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react'
 import PageNotFound from './lib/PageNotFound';
+import { AnimatePresence } from 'framer-motion';
+import PageTransition from './components/PageTransition';
 import TabStackLayout from './components/TabStackLayout';
 
 const Landing = lazy(() => import('./pages/Landing'));
@@ -62,32 +64,34 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
-    <Routes>
-      <Route path="/landing" element={<Suspense fallback={<LoadingSpinner />}><Landing /></Suspense>} />
-      <Route path="/terms" element={<Suspense fallback={<LoadingSpinner />}><TermsOfService /></Suspense>} />
-      <Route path="/privacy" element={<Suspense fallback={<LoadingSpinner />}><PrivacyPolicy /></Suspense>} />
-      <Route path="/welcome" element={<Suspense fallback={<LoadingSpinner />}><Welcome /></Suspense>} />
-      <Route path="/home" element={<Suspense fallback={<LoadingSpinner />}><Home /></Suspense>} />
-      <Route path="/combat" element={<Suspense fallback={<LoadingSpinner />}><CombatHub /></Suspense>} />
+    <AnimatePresence mode="wait">
+      <Routes>
+      <Route path="/landing" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Landing /></Suspense></PageTransition>} />
+      <Route path="/terms" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><TermsOfService /></Suspense></PageTransition>} />
+      <Route path="/privacy" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><PrivacyPolicy /></Suspense></PageTransition>} />
+      <Route path="/welcome" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Welcome /></Suspense></PageTransition>} />
+      <Route path="/home" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Home /></Suspense></PageTransition>} />
+      <Route path="/combat" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><CombatHub /></Suspense></PageTransition>} />
       <Route element={<TabStackLayout />}>
-        <Route path="/" element={<Suspense fallback={<LoadingSpinner />}><Dashboard /></Suspense>} />
-        <Route path="/training" element={<Suspense fallback={<LoadingSpinner />}><TrainingLog /></Suspense>} />
-        <Route path="/techniques" element={<Suspense fallback={<LoadingSpinner />}><TechniqueLibrary /></Suspense>} />
-        <Route path="/recovery" element={<Suspense fallback={<LoadingSpinner />}><Recovery /></Suspense>} />
-        <Route path="/competition" element={<Suspense fallback={<LoadingSpinner />}><Competition /></Suspense>} />
-        <Route path="/junior" element={<Suspense fallback={<LoadingSpinner />}><JuniorTracker /></Suspense>} />
-        <Route path="/vault" element={<Suspense fallback={<LoadingSpinner />}><VideoVault /></Suspense>} />
-        <Route path="/blueprint" element={<Suspense fallback={<LoadingSpinner />}><Blueprint /></Suspense>} />
-        <Route path="/food" element={<Suspense fallback={<LoadingSpinner />}><FoodLog /></Suspense>} />
-        <Route path="/progress" element={<Suspense fallback={<LoadingSpinner />}><Progress /></Suspense>} />
-        <Route path="/partners" element={<Suspense fallback={<LoadingSpinner />}><SparringPartners /></Suspense>} />
-        <Route path="/hub" element={<Suspense fallback={<LoadingSpinner />}><TrainingHub /></Suspense>} />
-        <Route path="/wellness" element={<Suspense fallback={<LoadingSpinner />}><WellnessTracker /></Suspense>} />
-        <Route path="/events" element={<Suspense fallback={<LoadingSpinner />}><CompetitionsEvents /></Suspense>} />
-        <Route path="/settings" element={<Suspense fallback={<LoadingSpinner />}><Settings /></Suspense>} />
+       <Route path="/" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Dashboard /></Suspense></PageTransition>} />
+       <Route path="/training" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><TrainingLog /></Suspense></PageTransition>} />
+       <Route path="/techniques" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><TechniqueLibrary /></Suspense></PageTransition>} />
+        <Route path="/recovery" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Recovery /></Suspense></PageTransition>} />
+        <Route path="/competition" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Competition /></Suspense></PageTransition>} />
+        <Route path="/junior" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><JuniorTracker /></Suspense></PageTransition>} />
+        <Route path="/vault" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><VideoVault /></Suspense></PageTransition>} />
+        <Route path="/blueprint" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Blueprint /></Suspense></PageTransition>} />
+        <Route path="/food" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><FoodLog /></Suspense></PageTransition>} />
+        <Route path="/progress" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Progress /></Suspense></PageTransition>} />
+        <Route path="/partners" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><SparringPartners /></Suspense></PageTransition>} />
+        <Route path="/hub" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><TrainingHub /></Suspense></PageTransition>} />
+        <Route path="/wellness" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><WellnessTracker /></Suspense></PageTransition>} />
+        <Route path="/events" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><CompetitionsEvents /></Suspense></PageTransition>} />
+        <Route path="/settings" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Settings /></Suspense></PageTransition>} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </AnimatePresence>
   );
 };
 

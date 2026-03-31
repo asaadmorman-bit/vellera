@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Save, Plus, ArrowLeft } from "lucide-react";
+import { Save, Plus } from "lucide-react";
+import BackButton from "../components/BackButton";
 import { FormError, SubmitButton, RequiredField } from "../components/FormValidation";
 import SelectDrawer from "../components/SelectDrawer";
 import { usePullToRefresh } from "../hooks/usePullToRefresh";
@@ -404,11 +405,7 @@ export default function TrainingLog() {
         </div>
       )}
       <div className="flex items-center gap-2 mb-2">
-        {isDeepLinked && (
-          <a href="/" className="text-commander-muted hover:text-white transition-all touch-target-min" title="Go back">
-            <ArrowLeft className="w-5 h-5" />
-          </a>
-        )}
+        {isDeepLinked && <BackButton to="/" />}
         <h1 className="text-white text-xl font-black tracking-tight">Training Log</h1>
       </div>
 

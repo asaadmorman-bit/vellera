@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { Camera, Loader2, ChevronDown, ChevronUp, Droplets, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, ArrowLeft } from "lucide-react";
+import { Camera, Loader2, ChevronDown, ChevronUp, Droplets, TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from "lucide-react";
+import BackButton from "../components/BackButton";
 import { FormError } from "../components/FormValidation";
 import SelectDrawer from "../components/SelectDrawer";
 
@@ -238,9 +239,7 @@ Return JSON with: food_description (string, describe what you see), calories (nu
   return (
     <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top overflow-auto h-screen">
       <div className="flex items-center gap-2 mb-2">
-        <a href="/" className="text-commander-muted hover:text-white transition-all touch-target-min" title="Go back">
-          <ArrowLeft className="w-5 h-5" />
-        </a>
+        <BackButton to="/" />
         <h1 className="text-white text-xl font-black tracking-tight">Food Log</h1>
       </div>
 
