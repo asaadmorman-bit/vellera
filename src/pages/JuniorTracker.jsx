@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import BackButton from "../components/BackButton";
 import { toast } from "sonner";
 import { Star, Plus } from "lucide-react";
 
@@ -87,12 +88,15 @@ export default function JuniorTracker() {
   });
 
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24">
+    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-white text-xl font-black tracking-tight">Junior Tracker</h1>
-          <p className="text-commander-muted text-xs">Kids BJJ · 5:15 PM @ The Lab</p>
+        <div className="flex items-center gap-2">
+          <BackButton to="/" />
+          <div>
+            <h1 className="text-white text-xl font-black tracking-tight">Junior Tracker</h1>
+            <p className="text-commander-muted text-xs">Kids BJJ · 5:15 PM @ The Lab</p>
+          </div>
         </div>
         <button onClick={() => setShowLog(s => !s)} className="bg-commander-red text-white rounded-lg p-2 hover:bg-red-700 transition-all">
           <Plus className="w-4 h-4" />

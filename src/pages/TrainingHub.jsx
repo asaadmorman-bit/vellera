@@ -1,14 +1,24 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import BackButton from "../components/BackButton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { CheckCircle, Play } from "lucide-react";
 import { toast } from "sonner";
 
 export default function TrainingHub() {
   const [curricula, setCurricula] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [progress, setProgress] = useState({});
+  const [progress, setProgress] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [assessmentOpen, setAssessmentOpen] = useState(false);
+  const [assessmentScore, setAssessmentScore] = useState("");
 
   useEffect(() => {
     base44.auth.me().then(u => setUser(u));
@@ -25,11 +35,11 @@ export default function TrainingHub() {
         })
       )
     ).then(results => {
-      const map = {};
+      const merged = [];
       results.forEach((r, i) => {
-        map[curricula[i].id] = r[0] || null;
+        merged.push({ curriculum_id: curricula[i].id, ...r[0] });
       });
-      setProgress(map);
+      setProgress(merged);
       setLoading(false);
     });
   }, [user, curricula]);
@@ -38,14 +48,16 @@ export default function TrainingHub() {
     setSelected(c);
   };
 
-  const handleTakeAssessment = async () => {
-    if (!selected || !user) return;
-    const score = window.prompt("Enter your assessment score (0-100):", "");
-    if (score === null) return;
-    const numScore = Math.max(0, Math.min(100, Number(score)));
-    
-    const existing = progress[selected.id];
-    if (existing) {
+  const submitAssessment = async () => {
+    if (!selected || !user || assessmentScore === "") return;
+    const numScore = parseInt(assessmentScore);
+    if (numScore < 0 || numScore > 100) {
+      toast.error("Score must be between 0-100");
+      return;
+    }
+
+    const existing = progress.find(p => p.curriculum_id === selected.id);
+    if (existing && existing.id) {
       await base44.entities.Curriculum_Progress.update(existing.id, {
         completion_status: "Finished",
         assessment_score: numScore,
@@ -61,19 +73,29 @@ export default function TrainingHub() {
         completed_date: new Date().toISOString().split("T")[0],
       });
     }
-    setProgress(p => ({
-      ...p,
-      [selected.id]: { ...progress[selected.id], completion_status: "Finished", assessment_score: numScore },
-    }));
+    setProgress(prev => {
+      const idx = prev.findIndex(p => p.curriculum_id === selected.id);
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = { ...updated[idx], completion_status: "Finished", assessment_score: numScore };
+        return updated;
+      }
+      return prev;
+    });
     toast.success("Assessment recorded!");
+    setAssessmentOpen(false);
+    setAssessmentScore("");
   };
 
   const p = selected ? progress[selected.id] : null;
   const isFinished = p?.completion_status === "Finished";
 
   return (
-    <div className="p-4 max-w-7xl mx-auto pb-24">
-      <h1 className="text-white text-2xl font-black tracking-tight mb-6">Training Hub</h1>
+    <div className="p-4 max-w-7xl mx-auto pb-24 safe-area-top">
+      <div className="flex items-center gap-2 mb-6">
+        <BackButton to="/" />
+        <h1 className="text-white text-2xl font-black tracking-tight">Training Hub</h1>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-screen max-h-[600px]">
         {/* Left: Curriculum List */}
@@ -90,7 +112,7 @@ export default function TrainingHub() {
               <p className="text-commander-muted text-sm p-4">No modules available yet.</p>
             ) : (
               curricula.map(c => {
-                const prog = progress[c.id];
+                const prog = progress.find(p => p.curriculum_id === c.id);
                 return (
                   <button
                     key={c.id}
@@ -167,8 +189,11 @@ export default function TrainingHub() {
                 {/* Assessment Button */}
                 {!isFinished ? (
                   <button
-                    onClick={handleTakeAssessment}
-                    className="w-full bg-commander-red text-white rounded-lg py-3 font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-all mt-4"
+                    onClick={() => {
+                      setAssessmentOpen(true);
+                      setAssessmentScore("");
+                    }}
+                    className="w-full bg-commander-red text-white rounded-lg py-3 font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-all mt-4 min-h-[44px]"
                   >
                     <Play className="w-4 h-4" />
                     Take Assessment

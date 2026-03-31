@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import BackButton from "../components/BackButton";
 import { toast } from "sonner";
 import { Upload, Play, Zap, Target, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import SelectDrawer from "../components/SelectDrawer";
@@ -223,8 +224,11 @@ Respond in JSON with keys: techniques_tagged (array of strings matching exactly 
   const topTechs = Object.entries(techFreq).sort((a, b) => b[1] - a[1]).slice(0, 3);
 
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24">
-      <h1 className="text-white text-xl font-black tracking-tight">Video Vault</h1>
+    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top">
+      <div className="flex items-center gap-2 mb-2">
+        <BackButton to="/" />
+        <h1 className="text-white text-xl font-black tracking-tight">Video Vault</h1>
+      </div>
 
       {/* Stats */}
       {clips.length > 0 && (

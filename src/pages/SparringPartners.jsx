@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import BackButton from "../components/BackButton";
 import { toast } from "sonner";
 import { Plus, Users, ChevronLeft, Dumbbell, Calendar } from "lucide-react";
 import SelectDrawer from "../components/SelectDrawer";
@@ -166,9 +167,10 @@ export default function SparringPartners() {
   );
 
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24">
+    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
+          <BackButton to="/" />
           <Users className="w-5 h-5 text-commander-red" />
           <h1 className="text-white text-xl font-black tracking-tight">Sparring Partners</h1>
         </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import BackButton from "../components/BackButton";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 const RESTORATION_PROTOCOLS = [
   { name: "Open the Book", sets: "10 reps/side", desc: "Lie on your side, knees tucked. Reach top arm over to other side. Opens chest for better breathing." },
@@ -66,11 +66,10 @@ export default function Recovery() {
         <h1 className="text-white text-xl font-black tracking-tight">Recovery Hub</h1>
       </div>
 
-      {/* Alerts */}
       {slowGrowthFlag && (
         <div className="bg-red-950 border border-red-700 rounded-xl p-4">
           <p className="text-red-300 font-bold text-sm">⚠️ Slow-Growth Algorithm Triggered</p>
-          <p className="text-red-400 text-xs mt-1">Average gas level {">"} 8.5 this week. 43yo Rule: High-intensity sparring locked for 48 hours. Technique only.</p>
+          <p className="text-red-400 text-xs mt-1">Average gas level {">"}  8.5 this week. 43yo Rule: High-intensity sparring locked for 48 hours. Technique only.</p>
         </div>
       )}
       {lowSleep && (

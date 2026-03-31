@@ -52,6 +52,7 @@ function TabStack({ tabId, currentTabId, children }) {
         currentTabId === tabId ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
       key={`tab-${tabId}`}
+      style={{ overscrollBehavior: 'contain' }}
     >
       {children}
     </div>
@@ -92,7 +93,7 @@ export default function TabStackLayout() {
       <VelleraBackground />
 
       {/* Rotating Background */}
-      <div className="fixed inset-0 z-1 pointer-events-none">
+      <div className="fixed inset-0 z-1 pointer-events-none" style={{ overscrollBehavior: 'contain' }}>
         {WARRIOR_IMAGES.map((src, i) => (
           <div
             key={src}
@@ -121,7 +122,7 @@ export default function TabStackLayout() {
       {/* Music Toggle Button */}
       <button
         onClick={() => setSpotifyOpen(!spotifyOpen)}
-        className="fixed bottom-20 right-3 z-50 w-9 h-9 rounded-full bg-green-700 border border-green-600 flex items-center justify-center text-base shadow-lg hover:bg-green-600 transition-all"
+        className="fixed bottom-20 right-3 z-50 w-9 h-9 rounded-full bg-green-700 border border-green-600 flex items-center justify-center text-base shadow-lg hover:bg-green-600 transition-all safe-area-bottom"
         title="Open Spotify Player"
       >
         🎵

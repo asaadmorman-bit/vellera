@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Flame, Droplets, Zap, Shield, Star, Target, Apple, Dumbbell, ChevronDown, ChevronUp } from "lucide-react";
+import BackButton from "../components/BackButton";
 
 // ─── ATHLETE PROFILES ───────────────────────────────────────────
 const DAD = {
@@ -305,7 +306,11 @@ export default function Blueprint() {
   }, []);
 
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24">
+    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top">
+      <div className="flex items-center gap-2 mb-2">
+        <BackButton to="/" />
+        <h1 className="text-white text-xl font-black tracking-tight">Blueprint</h1>
+      </div>
       {/* Hero */}
       <div className="relative rounded-xl overflow-hidden border border-commander-red" style={{ minHeight: 220 }}>
         <img src={heroImg} alt="warrior" className="absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000" />

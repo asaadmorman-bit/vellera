@@ -150,6 +150,12 @@ body, html {
     overscroll-behavior: none;
   }
 
+  /* Prevent iOS overscroll bounce on scrollable containers */
+  .overscroll-contain {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
   button, nav, [role="navigation"] {
     user-select: none;
     -webkit-user-select: none;

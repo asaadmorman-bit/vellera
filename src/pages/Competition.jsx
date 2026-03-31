@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import BackButton from "../components/BackButton";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 
 const COMP_DATE = new Date("2026-07-18");
@@ -75,8 +76,11 @@ export default function Competition() {
   const scoreColors = { green: "text-green-400", yellow: "text-yellow-400", red: "text-red-400" };
 
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24">
-      <h1 className="text-white text-xl font-black tracking-tight">Competition</h1>
+    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top">
+      <div className="flex items-center gap-2 mb-2">
+        <BackButton to="/" />
+        <h1 className="text-white text-xl font-black tracking-tight">Competition</h1>
+      </div>
 
       {/* Countdown */}
       <div className="bg-gradient-to-br from-red-950 to-commander-surface border border-commander-red rounded-xl p-5">

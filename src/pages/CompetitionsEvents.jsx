@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import BackButton from "../components/BackButton";
 import { Calendar, Plus } from "lucide-react";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
@@ -151,9 +152,12 @@ export default function CompetitionsEvents() {
   };
 
   return (
-    <div className="p-4 space-y-6 max-w-6xl mx-auto pb-24">
+    <div className="p-4 space-y-6 max-w-6xl mx-auto pb-24 safe-area-top">
       <div className="flex items-center justify-between">
-        <h1 className="text-white text-2xl font-black tracking-tight">Competitions & Events</h1>
+        <div className="flex items-center gap-2">
+          <BackButton to="/" />
+          <h1 className="text-white text-2xl font-black tracking-tight">Competitions & Events</h1>
+        </div>
         <button
           onClick={() => setShowForm(!showForm)}
           className="bg-commander-red text-white rounded-lg p-2 hover:bg-red-700 transition-all flex items-center gap-2"
