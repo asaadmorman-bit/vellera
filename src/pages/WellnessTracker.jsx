@@ -5,8 +5,10 @@ import { Save, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 
 export default function WellnessTracker() {
-  const [targetWeight, setTargetWeight] = useState(240);
+  const [target, setTarget] = useState(null);
   const [currentWeight, setCurrentWeight] = useState(null);
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalForm, setGoalForm] = useState({ target_metric: "", target_date: "" });
   const [lastLog, setLastLog] = useState(null);
   const [todayLog, setTodayLog] = useState({
     weight: "",
@@ -18,6 +20,16 @@ export default function WellnessTracker() {
 
   useEffect(() => {
     const loadData = async () => {
+      // Load target
+      const targets = await base44.entities.Wellness_Targets.list("-created_date", 1);
+      if (targets.length > 0) {
+        setTarget(targets[0]);
+        setGoalForm({
+          target_metric: targets[0].target_metric || "",
+          target_date: targets[0].target_date || "",
+        });
+      }
+
       const today = new Date().toISOString().split("T")[0];
       const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000)
         .toISOString()
@@ -88,6 +100,23 @@ export default function WellnessTracker() {
     setSaving(false);
   };
 
+  const handleSaveGoal = async () => {
+    if (!goalForm.target_metric) {
+      toast.error("Enter target weight");
+      return;
+    }
+    if (target) {
+      await base44.entities.Wellness_Targets.update(target.id, goalForm);
+      setTarget({ ...target, ...goalForm });
+    } else {
+      const newTarget = await base44.entities.Wellness_Targets.create(goalForm);
+      setTarget(newTarget);
+    }
+    setEditingGoal(false);
+    toast.success("Goal updated!");
+  };
+
+  const targetWeight = target?.target_metric;
   const weightDiff = currentWeight && lastLog ? currentWeight - lastLog.weight_lbs : null;
   const progress =
     currentWeight && targetWeight
@@ -106,6 +135,41 @@ export default function WellnessTracker() {
     <div className="p-4 space-y-6 max-w-6xl mx-auto pb-24">
       <h1 className="text-white text-2xl font-black tracking-tight">Wellness Tracker</h1>
 
+      {/* Goal Editor Modal */}
+      {editingGoal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="bg-commander-surface border border-commander-border rounded-2xl p-6 max-w-sm w-full space-y-4">
+            <h2 className="text-white font-bold text-lg">Set Wellness Goal</h2>
+            <div>
+              <label className="text-xs text-commander-muted block mb-2">Target Weight (lbs)</label>
+              <input
+                type="number"
+                step="0.5"
+                value={goalForm.target_metric}
+                onChange={(e) => setGoalForm((p) => ({ ...p, target_metric: Number(e.target.value) }))}
+                placeholder="e.g. 240"
+                className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-600"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-commander-muted block mb-2">Target Date (optional)</label>
+              <input
+                type="date"
+                value={goalForm.target_date || ""}
+                onChange={(e) => setGoalForm((p) => ({ ...p, target_date: e.target.value }))}
+                className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-600"
+              />
+            </div>
+            <button
+              onClick={handleSaveGoal}
+              className="w-full bg-blue-600 text-white rounded-lg py-2 font-bold hover:bg-blue-700 transition-all"
+            >
+              Save Goal
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Goal Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-3 bg-gradient-to-r from-blue-950 to-commander-surface border border-blue-800 rounded-2xl p-6 shadow-lg">
@@ -113,9 +177,19 @@ export default function WellnessTracker() {
             Goal Overview
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-commander-muted text-xs mb-1">Target Weight</p>
-              <p className="text-white font-black text-2xl">{targetWeight} lbs</p>
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-commander-muted text-xs mb-1">Target Weight</p>
+                <p className="text-white font-black text-2xl">
+                  {targetWeight ? `${targetWeight} lbs` : "—"}
+                </p>
+              </div>
+              <button
+                onClick={() => setEditingGoal(!editingGoal)}
+                className="text-blue-400 text-xs font-bold hover:text-blue-300 transition-all"
+              >
+                {editingGoal ? "Cancel" : "Edit"}
+              </button>
             </div>
             <div>
               <p className="text-commander-muted text-xs mb-1">Current Weight</p>
