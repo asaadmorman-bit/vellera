@@ -169,6 +169,29 @@ body, html {
     }
   }
 
+  /* Android accessibility: ensure minimum readable text */
+  @supports (font-size: clamp(14px, 4vw, 16px)) {
+    body {
+      font-size: clamp(14px, 4vw, 16px);
+    }
+    
+    h1, .text-2xl, .text-xl {
+      font-size: clamp(18px, 6vw, 28px);
+    }
+    
+    h2, .text-lg {
+      font-size: clamp(16px, 5vw, 20px);
+    }
+    
+    .text-sm {
+      font-size: clamp(13px, 3.5vw, 14px);
+    }
+    
+    .text-xs {
+      font-size: clamp(11px, 3vw, 12px);
+    }
+  }
+
   /* Dark mode preference */
   @media (prefers-color-scheme: dark) {
     :root:not(.light) {

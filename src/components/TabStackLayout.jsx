@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import DrillTimer from "./DrillTimer";
@@ -45,9 +45,29 @@ const MORE_NAV = [
 ];
 
 // Tab stack component - keeps its own scroll position and state
-function TabStack({ tabId, currentTabId, children }) {
+function TabStack({ tabId, currentTabId, children, scrollRefs }) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const isActive = currentTabId === tabId;
+    
+    if (isActive && scrollRefs.current[tabId]) {
+      // Restore scroll position when tab becomes active
+      containerRef.current.scrollTop = scrollRefs.current[tabId];
+    }
+  }, [currentTabId, tabId, scrollRefs]);
+
+  const handleScroll = () => {
+    if (containerRef.current) {
+      scrollRefs.current[tabId] = containerRef.current.scrollTop;
+    }
+  };
+
   return (
     <div
+      ref={containerRef}
+      onScroll={handleScroll}
       className={`absolute inset-0 overflow-auto transition-opacity duration-200 ${
         currentTabId === tabId ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
@@ -66,6 +86,7 @@ export default function TabStackLayout() {
   const [muted, setMuted] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [spotifyOpen, setSpotifyOpen] = useState(false);
+  const scrollRefs = useRef({});
 
   // Enforce strict dark mode on Android
   useEffect(() => {
@@ -160,7 +181,7 @@ export default function TabStackLayout() {
       {/* Page Content - Independent Tab Stacks */}
       <main className="flex-1 overflow-hidden relative z-10">
         {PRIMARY_NAV.map(nav => (
-          <TabStack key={nav.id} tabId={nav.id} currentTabId={currentTabId}>
+          <TabStack key={nav.id} tabId={nav.id} currentTabId={currentTabId} scrollRefs={scrollRefs}>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
