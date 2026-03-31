@@ -211,7 +211,7 @@ export default function Landing() {
 
           <div className="bg-commander-surface border border-commander-border rounded-2xl p-12 space-y-6">
             {/* Founder Avatar */}
-            <div className="w-32 h-32 mx-auto rounded-full border-4 border-commander-border overflow-hidden shadow-lg">
+            <div className="w-48 h-48 mx-auto rounded-full border-4 border-commander-border overflow-hidden shadow-lg">
               <img
                 src="https://media.base44.com/images/public/69c722c665db36b41f55ba9c/f8c8b63ac_Gemini_Generated_Image_l5e1fyl5e1fyl5e1.png"
                 alt="Asaad Morman"

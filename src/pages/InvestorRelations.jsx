@@ -119,7 +119,7 @@ export default function InvestorRelations() {
           <h2 className="text-4xl font-black mb-12 text-center">The Unfair Advantage: The Founder</h2>
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Founder Image */}
-            <div className="relative h-96 rounded-2xl border border-commander-border overflow-hidden shadow-2xl">
+            <div className="relative h-[500px] rounded-2xl border border-commander-border overflow-hidden shadow-2xl">
               <img
                 src="https://media.base44.com/images/public/69c722c665db36b41f55ba9c/f8c8b63ac_Gemini_Generated_Image_l5e1fyl5e1fyl5e1.png"
                 alt="Asaad Morman — Founder"
