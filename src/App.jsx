@@ -18,6 +18,7 @@ import FoodLog from './pages/FoodLog';
 import Progress from './pages/Progress';
 import SparringPartners from './pages/SparringPartners';
 import TrainingHub from './pages/TrainingHub';
+import WellnessTracker from './pages/WellnessTracker';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -59,6 +60,7 @@ const AuthenticatedApp = () => {
         <Route path="/progress" element={<Progress />} />
         <Route path="/partners" element={<SparringPartners />} />
         <Route path="/hub" element={<TrainingHub />} />
+        <Route path="/wellness" element={<WellnessTracker />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
