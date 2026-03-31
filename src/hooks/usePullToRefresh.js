@@ -4,16 +4,17 @@ export function usePullToRefresh(onRefresh) {
   const containerRef = useRef(null);
   const startYRef = useRef(0);
   const pullDistanceRef = useRef(0);
+  const refreshingRef = useRef(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const element = containerRef.current;
-    let refreshing = false;
 
     const handleTouchStart = (e) => {
-      if (element.scrollTop === 0) {
+      if (element.scrollTop === 0 && e.touches.length > 0) {
         startYRef.current = e.touches[0].clientY;
+        pullDistanceRef.current = 0;
       }
     };
 
@@ -29,12 +30,16 @@ export function usePullToRefresh(onRefresh) {
     };
 
     const handleTouchEnd = async () => {
-      if (pullDistanceRef.current > 60 && !refreshing) {
-        refreshing = true;
-        await onRefresh();
-        refreshing = false;
+      if (pullDistanceRef.current > 60 && !refreshingRef.current) {
+        refreshingRef.current = true;
+        try {
+          await onRefresh();
+        } finally {
+          refreshingRef.current = false;
+        }
       }
       pullDistanceRef.current = 0;
+      startYRef.current = 0;
     };
 
     element.addEventListener("touchstart", handleTouchStart, false);
@@ -42,11 +47,20 @@ export function usePullToRefresh(onRefresh) {
     element.addEventListener("touchend", handleTouchEnd, false);
 
     return () => {
-      element.removeEventListener("touchstart", handleTouchStart);
+      element.removeEventListener("touchstart", handleTouchStart, false);
       element.removeEventListener("touchmove", handleTouchMove);
-      element.removeEventListener("touchend", handleTouchEnd);
+      element.removeEventListener("touchend", handleTouchEnd, false);
     };
   }, [onRefresh]);
+
+  // Reset state when container unmounts or changes
+  useEffect(() => {
+    return () => {
+      startYRef.current = 0;
+      pullDistanceRef.current = 0;
+      refreshingRef.current = false;
+    };
+  }, []);
 
   return containerRef;
 }

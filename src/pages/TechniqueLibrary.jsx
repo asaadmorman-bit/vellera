@@ -104,11 +104,11 @@ export default function TechniqueLibrary() {
   };
 
   return (
-    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24">
+    <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top overflow-auto h-screen">
       <div className="flex items-center justify-between">
         <h1 className="text-white text-xl font-black tracking-tight">Skill Matrix</h1>
-        <button onClick={() => setShowAdd(s => !s)} className="bg-commander-red text-white rounded-lg p-2 hover:bg-red-700 transition-all">
-          <Plus className="w-4 h-4" />
+        <button onClick={() => setShowAdd(s => !s)} className="min-h-[44px] min-w-[44px] flex items-center justify-center bg-commander-red text-white rounded-lg hover:bg-red-700 transition-all">
+          <Plus className="w-5 h-5" />
         </button>
       </div>
 
@@ -142,13 +142,13 @@ export default function TechniqueLibrary() {
       )}
 
       {/* Category filter */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        {["All", ...CATEGORIES].map(c => (
-          <button key={c} onClick={() => setSelectedCat(c)}
-            className={`whitespace-nowrap text-xs px-3 py-1.5 rounded-full border transition-all flex-shrink-0 ${selectedCat === c ? "border-commander-red bg-red-950 text-white" : "border-commander-border text-commander-muted"}`}>
-            {c.split(" & ")[0]}
-          </button>
-        ))}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+       {["All", ...CATEGORIES].map(c => (
+         <button key={c} onClick={() => setSelectedCat(c)}
+           className={`whitespace-nowrap text-xs px-3 py-2 rounded-full border transition-all flex-shrink-0 min-h-[44px] flex items-center ${selectedCat === c ? "border-commander-red bg-red-950 text-white font-semibold" : "border-commander-border text-commander-muted hover:border-commander-muted/70"}`}>
+           {c.split(" & ")[0]}
+         </button>
+       ))}
       </div>
 
       {/* Techniques */}
@@ -168,10 +168,10 @@ export default function TechniqueLibrary() {
                   {tech.notes && <p className="text-yellow-600 text-xs mt-0.5 italic">{tech.notes}</p>}
                 </div>
                 {tech.video_url && (
-                  <button onClick={() => setVideoTech(tech)} className="flex-shrink-0 text-red-400 hover:text-red-300 transition-all" title="Watch reference video">
-                    <PlayCircle className="w-7 h-7" />
-                  </button>
-                )}
+                    <button onClick={() => setVideoTech(tech)} className="flex-shrink-0 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-red-400 hover:text-red-300 transition-all" title="Watch reference video">
+                      <PlayCircle className="w-5 h-5" />
+                    </button>
+                  )}
               </div>
               <XPBar xp={tech.xp || 0} level={tech.mastery_level || 0} />
               {tech.last_drilled && <p className="text-xs text-commander-muted mt-1">Last drilled: {tech.last_drilled}</p>}
