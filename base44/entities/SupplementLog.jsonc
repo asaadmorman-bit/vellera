@@ -1,0 +1,97 @@
+{
+  "name": "SupplementLog",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "name": {
+      "type": "string",
+      "title": "Supplement / Medication Name"
+    },
+    "dosage": {
+      "type": "string",
+      "title": "Dosage (e.g. 5g, 500mg, 2 caps)"
+    },
+    "timing": {
+      "type": "string",
+      "enum": [
+        "Morning",
+        "Pre-Workout",
+        "Post-Workout",
+        "With Meal",
+        "Bedtime",
+        "As Needed"
+      ],
+      "title": "Timing"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Supplement",
+        "Medication",
+        "Vitamin/Mineral",
+        "Herb/Adaptogen",
+        "Protein/Amino",
+        "Recovery"
+      ],
+      "title": "Category"
+    },
+    "taken": {
+      "type": "boolean",
+      "title": "Taken Today",
+      "default": false
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes / Side Effects"
+    }
+  },
+  "required": [
+    "date",
+    "name",
+    "timing",
+    "category"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
