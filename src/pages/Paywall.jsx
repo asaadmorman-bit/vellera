@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X, Check, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import PricingCard from "../components/PricingCard";
+import SubscriptionCheckout from "../components/SubscriptionCheckout";
 
 const VALUE_PROPS = [
   "Access to the exclusive Vellera Combat Hub (MMA, Boxing, Grappling)",
@@ -11,7 +12,12 @@ const VALUE_PROPS = [
 ];
 
 export default function Paywall() {
-  const [selectedPlan, setSelectedPlan] = useState("annual");
+  const [selectedPlan, setSelectedPlan] = useState("premium");
+  
+  const planMap = {
+    premium: 'premium',
+    elite: 'elite',
+  };
 
   const handleSkip = () => {
     window.history.back();
@@ -66,33 +72,27 @@ export default function Paywall() {
         {/* Pricing Cards */}
         <div className="mb-8 space-y-3">
           <PricingCard
-            title="Annual Plan"
-            price="$119.99"
-            period="year"
-            subtext="Just $9.99/mo"
-            badge="MOST POPULAR - SAVE 50%"
-            isSelected={selectedPlan === "annual"}
-            onClick={() => setSelectedPlan("annual")}
-            trialText="Includes 7-Day Free Trial"
+            title="Premium Training"
+            price="$29.99"
+            period="month"
+            badge="MOST POPULAR"
+            isSelected={selectedPlan === "premium"}
+            onClick={() => setSelectedPlan("premium")}
+            trialText="Full access to all training programs"
           />
 
           <PricingCard
-            title="Monthly Plan"
-            price="$19.99"
+            title="Elite Coaching"
+            price="$49.99"
             period="month"
-            isSelected={selectedPlan === "monthly"}
-            onClick={() => setSelectedPlan("monthly")}
-            trialText="Includes 7-Day Free Trial"
+            isSelected={selectedPlan === "elite"}
+            onClick={() => setSelectedPlan("elite")}
+            trialText="Premium + 1-on-1 coaching sessions"
           />
         </div>
 
         {/* CTA Button */}
-        <button
-          className="w-full bg-vellera-blue text-commander-dark font-black py-4 rounded-xl mb-4 hover:bg-cyan-400 transition-all text-lg min-h-[56px] flex items-center justify-center"
-          title="Start subscription"
-        >
-          {selectedPlan === "annual" ? "Start 7-Day Free Trial" : "Subscribe Monthly"}
-        </button>
+        <SubscriptionCheckout planType={planMap[selectedPlan]} />
 
         {/* Trust Signals */}
         <div className="flex items-center justify-center gap-2 text-xs text-gray-400 mb-6">
