@@ -1,315 +1,418 @@
-import { useState, useEffect, useRef } from "react";
-import { X, Pause, Play, SkipForward } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { X, Pause, Play, SkipForward, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AudioPlayerWidget from "../components/AudioPlayerWidget";
 
-// Simulated workout data (can be fetched from API)
-const MOCK_WORKOUT = {
+// ─── Default workout (used if no prop passed via location state) ──────────────
+const DEFAULT_WORKOUT = {
   title: "The Strike: Heavy Bag Intervals",
-  totalRounds: 5,
-  currentRound: 3,
-  movements: [
-    { name: "JAB-CROSS-HOOK", duration: 60 },
-    { name: "UPPERCUTS", duration: 45 },
-    { name: "SPEED ROUND", duration: 45 },
-    { name: "REST", duration: 30 },
+  totalRounds: 3,
+  exercises: [
+    { name: "JAB-CROSS-HOOK",   duration_seconds: 40, rest_seconds: 20 },
+    { name: "UPPERCUTS",        duration_seconds: 45, rest_seconds: 15 },
+    { name: "SPEED ROUND",      duration_seconds: 30, rest_seconds: 20 },
+    { name: "POWER SHOTS",      duration_seconds: 40, rest_seconds: 20 },
+    { name: "DEFENSE DRILL",    duration_seconds: 45, rest_seconds: 0  },
   ],
-  currentMovementIndex: 0,
 };
 
-export default function ActiveWorkout() {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Converts raw seconds to "MM:SS" string. e.g. 65 → "01:05" */
+function formatTime(seconds) {
+  const s = Math.max(0, seconds);
+  const mins = Math.floor(s / 60);
+  const secs = s % 60;
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+/**
+ * playPhaseAlert(type)
+ * Handles audio cues for each phase transition.
+ *
+ * @param {"work"|"rest"|"complete"} type
+ *
+ * AUDIO DUCKING INTEGRATION POINTS (native):
+ *   iOS   → AVAudioSession.setCategory(.playback, options: .duckOthers)
+ *   Android → AudioAttributes.Builder().setContentType(CONTENT_TYPE_SPEECH)
+ *
+ * WEB LIMITATION: Browsers cannot programmatically duck Spotify/YouTube.
+ * The Web Audio API can control sounds played *within* the browser context only.
+ */
+async function playPhaseAlert(type) {
+  // 1. DUCK background audio (OS-level — add native bridge call here)
+  //    e.g. NativeModules.AudioDuck.requestFocus()
+
+  try {
+    const soundMap = {
+      work:     "/sounds/bell.mp3",      // Boxing bell — sharp, attention-grabbing
+      rest:     "/sounds/chime.mp3",     // Soft chime — signals rest period
+      complete: "/sounds/complete.mp3",  // Victory anthem — workout done
+    };
+
+    const audio = new Audio(soundMap[type] || soundMap.work);
+    audio.volume = 1.0;
+
+    // 2. PLAY local asset
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      await playPromise.catch(() => {}); // Graceful fail on autoplay block
+    }
+
+    // 3. RESTORE background audio after ~2s
+    //    e.g. NativeModules.AudioDuck.abandonFocus()  ← add here after delay
+    await new Promise(r => setTimeout(r, 2000));
+  } catch {
+    // Silent fail — audio is non-critical
+  }
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export default function ActiveWorkout({ workout: workoutProp }) {
   const navigate = useNavigate();
-  const [isPaused, setIsPaused] = useState(false);
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [exitTapCount, setExitTapCount] = useState(0);
-  const exitTapTimeoutRef = useRef(null);
 
-  // Timer state
-  const [timeLeft, setTimeLeft] = useState(MOCK_WORKOUT.movements[0].duration);
-  const [currentMovement, setCurrentMovement] = useState(0);
-  const [roundsCompleted, setRoundsCompleted] = useState(0);
+  // Accept workout from prop, location state, or fall back to default
+  const workout = workoutProp
+    || (typeof window !== "undefined" && window.history.state?.workout)
+    || DEFAULT_WORKOUT;
 
-  // Wakelock: Prevent screen sleep during active workout
-  // NOTE: In production, integrate with react-native-keep-awake or similar
-  // For web: Use Screen Wake Lock API (if available)
+  const { exercises, totalRounds, title } = workout;
+
+  // ── Core State ──────────────────────────────────────────────────────────────
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [timeLeft, setTimeLeft]                         = useState(exercises[0].duration_seconds);
+  const [isResting, setIsResting]                       = useState(false);
+  const [isPaused, setIsPaused]                         = useState(false);
+  const [currentRound, setCurrentRound]                 = useState(1);
+  const [isComplete, setIsComplete]                     = useState(false);
+  const [showExitConfirm, setShowExitConfirm]           = useState(false);
+  const exitConfirmRef = useRef(null);
+
+  const currentExercise = exercises[currentExerciseIndex] || exercises[exercises.length - 1];
+  const nextExercise    = exercises[currentExerciseIndex + 1] || null;
+  const totalExercises  = exercises.length;
+
+  // ── Screen Wakelock ─────────────────────────────────────────────────────────
+  // Prevents screen sleep during active workout.
+  // Native equivalent: RNKeepAwake.keepAwake() / [UIApplication sharedApplication].idleTimerDisabled = YES
   useEffect(() => {
-    const acquireWakeLock = async () => {
-      try {
-        if ("wakeLock" in navigator) {
-          const wakeLock = await navigator.wakeLock.request("screen");
-          console.log("✅ Screen wake lock acquired");
-          return wakeLock;
-        }
-      } catch (err) {
-        console.warn("⚠️ Wake lock not available:", err);
-      }
-      return null;
-    };
-
     let wakeLock = null;
-    acquireWakeLock().then((lock) => {
-      wakeLock = lock;
-    });
+    if (!isPaused && !isComplete && "wakeLock" in navigator) {
+      navigator.wakeLock.request("screen")
+        .then(lock => { wakeLock = lock; })
+        .catch(() => {});
+    }
+    return () => { wakeLock?.release().catch(() => {}); };
+  }, [isPaused, isComplete]);
 
-    return () => {
-      if (wakeLock) {
-        wakeLock.release().catch(() => {});
+  // ── Phase Transition Logic ───────────────────────────────────────────────────
+  const advancePhase = useCallback(async () => {
+    if (isResting) {
+      // REST phase ended → move to next exercise
+      const nextIdx = currentExerciseIndex + 1;
+
+      if (nextIdx >= totalExercises) {
+        // All exercises in this round done — check rounds
+        if (currentRound >= totalRounds) {
+          // ── WORKOUT COMPLETE ──
+          setIsComplete(true);
+          await playPhaseAlert("complete");
+          return;
+        }
+        // Next round
+        setCurrentRound(r => r + 1);
+        setCurrentExerciseIndex(0);
+        setIsResting(false);
+        setTimeLeft(exercises[0].duration_seconds);
+        await playPhaseAlert("work");
+      } else {
+        setCurrentExerciseIndex(nextIdx);
+        setIsResting(false);
+        setTimeLeft(exercises[nextIdx].duration_seconds);
+        await playPhaseAlert("work");
       }
-    };
-  }, []);
+    } else {
+      // WORK phase ended
+      const ex = exercises[currentExerciseIndex];
+      if (ex.rest_seconds > 0) {
+        // Transition to REST
+        setIsResting(true);
+        setTimeLeft(ex.rest_seconds);
+        await playPhaseAlert("rest");
+      } else {
+        // No rest — go straight to next exercise
+        const nextIdx = currentExerciseIndex + 1;
+        if (nextIdx >= totalExercises) {
+          if (currentRound >= totalRounds) {
+            setIsComplete(true);
+            await playPhaseAlert("complete");
+            return;
+          }
+          setCurrentRound(r => r + 1);
+          setCurrentExerciseIndex(0);
+          setTimeLeft(exercises[0].duration_seconds);
+        } else {
+          setCurrentExerciseIndex(nextIdx);
+          setTimeLeft(exercises[nextIdx].duration_seconds);
+        }
+        await playPhaseAlert("work");
+      }
+    }
+  }, [currentExerciseIndex, currentRound, exercises, isResting, totalExercises, totalRounds]);
 
-  // Main timer loop
+  // ── Timer Engine ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || isComplete) return;
 
-    const timerInterval = setInterval(() => {
-      setTimeLeft((prev) => {
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
         if (prev <= 1) {
-          // Timer finished - play bell sound and advance
-          playBellSound();
-          advanceToNextMovement();
+          // Schedule phase advance outside of setState to avoid stale closure
+          clearInterval(interval);
+          advancePhase();
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timerInterval);
-  }, [isPaused, currentMovement]);
+    return () => clearInterval(interval);
+  }, [isPaused, isComplete, advancePhase]);
 
-  // Play bell sound with audio ducking
-  const playBellSound = async () => {
-    try {
-      const audio = new Audio("/sounds/bell.mp3");
-      audio.volume = 1.0;
-      
-      // Audio ducking: lower external audio before bell
-      // (Web Audio API limitation: cannot control Spotify/YouTube directly from browser)
-      // On native iOS/Android, audio ducking would use:
-      // - iOS: AVAudioSession with .duckOthers option
-      // - Android: AudioAttributes with CONTENT_TYPE_SPEECH
-      
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => console.warn("Bell playback failed:", err));
-      }
-      
-      // Wait for bell to finish (~1.5s)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-    } catch (error) {
-      console.error("Bell sound error:", error);
-    }
-  };
+  // ── User Actions ─────────────────────────────────────────────────────────────
 
-  // Advance to next movement or round
-  const advanceToNextMovement = () => {
-    const nextIndex = (currentMovement + 1) % MOCK_WORKOUT.movements.length;
-    setCurrentMovement(nextIndex);
+  const handlePlayPause = () => setIsPaused(p => !p);
 
-    if (nextIndex === 0) {
-      // Completed a full round
-      setRoundsCompleted((prev) => prev + 1);
-    }
+  /** Instantly jump to the next phase (skip current interval) */
+  const handleSkipPhase = () => advancePhase();
 
-    const nextDuration = MOCK_WORKOUT.movements[nextIndex].duration;
-    setTimeLeft(nextDuration);
-  };
-
-  // Manual skip to next interval
-  const handleSkipInterval = () => {
-    advanceToNextMovement();
-  };
-
-  // Double-tap exit confirmation
-  const handleExitAttempt = () => {
-    setExitTapCount((prev) => prev + 1);
-
-    if (exitTapCount === 0) {
-      // First tap
-      setShowExitConfirm(true);
-
-      // Reset after 3 seconds
-      if (exitTapTimeoutRef.current) clearTimeout(exitTapTimeoutRef.current);
-      exitTapTimeoutRef.current = setTimeout(() => {
-        setExitTapCount(0);
-        setShowExitConfirm(false);
-      }, 3000);
-    } else if (exitTapCount === 1) {
-      // Second tap - confirm exit
+  /** Show exit confirmation dialog */
+  const handleEndWorkout = () => {
+    setIsPaused(true);
+    setShowExitConfirm(true);
+    // Auto-cancel confirm after 5s
+    clearTimeout(exitConfirmRef.current);
+    exitConfirmRef.current = setTimeout(() => {
       setShowExitConfirm(false);
-      setExitTapCount(0);
-      if (exitTapTimeoutRef.current) clearTimeout(exitTapTimeoutRef.current);
-      navigate(-1);
-    }
+      setIsPaused(false);
+    }, 5000);
   };
 
-  const movement = MOCK_WORKOUT.movements[currentMovement];
-  const nextMovement =
-    MOCK_WORKOUT.movements[(currentMovement + 1) % MOCK_WORKOUT.movements.length];
-  const progressPercent =
-    ((movement.duration - timeLeft) / movement.duration) * 100;
-
-  // Format time as MM:SS
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  const confirmExit = () => {
+    clearTimeout(exitConfirmRef.current);
+    navigate(-1);
   };
 
-  // Determine color based on movement type
-  const isRest = movement.name === "REST";
-  const accentColor = isRest ? "text-green-400" : "text-blue-400";
-  const ringColor = isRest ? "#22c55e" : "#00E5FF";
+  const cancelExit = () => {
+    clearTimeout(exitConfirmRef.current);
+    setShowExitConfirm(false);
+    setIsPaused(false);
+  };
+
+  // ── Derived Display Values ───────────────────────────────────────────────────
+  const phaseDuration = isResting ? currentExercise.rest_seconds : currentExercise.duration_seconds;
+  const progressPercent = phaseDuration > 0 ? ((phaseDuration - timeLeft) / phaseDuration) * 100 : 0;
+  const ringColor = isResting ? "#22c55e" : "#00E5FF";
+  const phaseLabel = isResting ? "REST" : currentExercise.name;
+  const phaseColor = isResting ? "text-green-400" : "text-[#00E5FF]";
+
+  // ── Workout Complete Screen ───────────────────────────────────────────────────
+  if (isComplete) {
+    return (
+      <div className="w-full h-screen bg-[#121212] flex flex-col items-center justify-center text-center p-6 safe-area-top">
+        <div className="text-6xl mb-6">🏆</div>
+        <h1 className="text-white font-black text-3xl mb-2">Workout Complete!</h1>
+        <p className="text-gray-400 text-sm mb-2">{title}</p>
+        <p className="text-[#00E5FF] font-bold text-lg mb-8">{totalRounds} Rounds · {totalExercises} Exercises</p>
+        <button
+          onClick={() => navigate("/")}
+          className="w-full max-w-xs py-4 rounded-xl font-black text-base text-black"
+          style={{ backgroundColor: "#00E5FF" }}
+        >
+          Back to Dashboard
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full h-screen bg-vellera-dark flex flex-col relative overflow-hidden safe-area-top">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-transparent pointer-events-none" />
+    <div className="w-full h-screen bg-[#121212] flex flex-col relative overflow-hidden safe-area-top">
+      {/* Ambient phase glow */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-colors duration-700"
+        style={{ background: isResting ? "radial-gradient(ellipse at top, #22c55e0a, transparent 60%)" : "radial-gradient(ellipse at top, #00E5FF0a, transparent 60%)" }}
+      />
 
-      {/* Header */}
-      <header className="relative z-20 px-4 py-4 flex items-center justify-between border-b border-commander-border bg-commander-dark/50 backdrop-blur">
-        {/* Exit Button with Double-Tap Confirmation */}
-        <div className="relative">
-          <button
-            onClick={handleExitAttempt}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center bg-red-900/50 hover:bg-red-900 border border-red-700 rounded-lg transition-all"
-            title="End Workout (double-tap)"
-          >
-            <X className="w-5 h-5 text-red-400" />
-          </button>
+      {/* ── Header ── */}
+      <header className="relative z-20 px-4 py-4 flex items-center justify-between border-b border-gray-800 bg-black/40 backdrop-blur">
+        <button
+          onClick={handleEndWorkout}
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center bg-red-900/50 hover:bg-red-900 border border-red-800 rounded-lg transition-all"
+        >
+          <X className="w-5 h-5 text-red-400" />
+        </button>
 
-          {/* Confirmation indicator */}
-          {showExitConfirm && (
-            <div className="absolute top-full mt-2 left-0 bg-red-900 border border-red-700 rounded-lg px-3 py-1 whitespace-nowrap text-xs text-red-300 font-bold">
-              Tap again to confirm
-            </div>
-          )}
-        </div>
-
-        {/* Title */}
         <div className="flex-1 text-center px-4">
-          <h1 className="text-white font-black text-sm md:text-base tracking-tight truncate">
-            {MOCK_WORKOUT.title}
-          </h1>
+          <p className="text-white font-black text-sm tracking-tight truncate">{title}</p>
+          <p className="text-gray-500 text-xs mt-0.5">
+            Ex {currentExerciseIndex + 1}/{totalExercises} · Round {currentRound}/{totalRounds}
+          </p>
         </div>
 
-        {/* Round Counter */}
-        <div className="flex items-center gap-1 bg-commander-surface border border-commander-border rounded-lg px-3 py-2 text-xs font-bold">
-          <span className="text-blue-400">Round</span>
-          <span className="text-white">{roundsCompleted + 1}</span>
-          <span className="text-commander-muted">/</span>
-          <span className="text-white">{MOCK_WORKOUT.totalRounds}</span>
+        <div className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-xs font-bold">
+          <span style={{ color: "#00E5FF" }}>R{currentRound}</span>
+          <span className="text-gray-600">/{totalRounds}</span>
         </div>
       </header>
 
-      {/* Main Timer Display */}
+      {/* ── Main Timer ── */}
       <div className="relative z-10 flex-1 flex items-center justify-center px-4">
-        {/* Circular Progress Ring */}
-        <div className="relative w-64 h-64 md:w-80 md:h-80">
-          <svg
-            className="absolute inset-0 w-full h-full transform -rotate-90"
-            viewBox="0 0 200 200"
-          >
-            {/* Background ring */}
-            <circle
-              cx="100"
-              cy="100"
-              r="95"
-              fill="none"
-              stroke="#1f2937"
-              strokeWidth="8"
-            />
-
-            {/* Progress ring with glow */}
+        <div className="relative w-72 h-72 md:w-80 md:h-80">
+          {/* SVG Ring */}
+          <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 200 200">
             <defs>
               <filter id="glow">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                <feMerge>
-                  <feMergeNode in="coloredBlur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
+                <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
               </filter>
             </defs>
-
+            <circle cx="100" cy="100" r="90" fill="none" stroke="#1f2937" strokeWidth="8" />
             <circle
-              cx="100"
-              cy="100"
-              r="95"
+              cx="100" cy="100" r="90"
               fill="none"
               stroke={ringColor}
               strokeWidth="8"
-              strokeDasharray={`${(progressPercent / 100) * 596.9} 596.9`}
+              strokeDasharray={`${(progressPercent / 100) * 565.5} 565.5`}
               strokeLinecap="round"
               filter="url(#glow)"
-              opacity="0.9"
             />
           </svg>
 
           {/* Center content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            {/* Timer (massive, legible font) */}
-            <div className="text-white font-mono font-black text-7xl md:text-8xl leading-none tracking-tighter">
+            {/* Time */}
+            <div className="text-white font-mono font-black text-7xl leading-none tracking-tighter">
               {formatTime(timeLeft)}
             </div>
 
-            {/* Current movement label */}
-            <div className={`mt-4 font-black text-lg md:text-xl tracking-widest uppercase ${accentColor}`}>
-              {movement.name}
+            {/* Phase label */}
+            <p className={`mt-4 font-black text-xl tracking-widest uppercase ${phaseColor}`}>
+              {phaseLabel}
+            </p>
+
+            {/* Next up */}
+            <div className="mt-3 text-gray-500 text-xs text-center">
+              {isResting
+                ? nextExercise
+                  ? <>Next: <span className="text-white font-semibold">{nextExercise.name}</span></>
+                  : <span className="text-[#00E5FF]">Last exercise!</span>
+                : currentExercise.rest_seconds > 0
+                  ? <>Rest after: <span className="text-green-400 font-semibold">{currentExercise.rest_seconds}s</span></>
+                  : <span className="text-yellow-400 font-semibold">No rest — push through!</span>
+              }
             </div>
 
-            {/* Next up indicator */}
-            <div className="mt-3 text-commander-muted text-xs md:text-sm text-center">
-              Up Next: <span className="text-white font-semibold">{nextMovement.name}</span>
-            </div>
-
-            {/* Pause indicator */}
             {isPaused && (
-              <div className="mt-4 px-3 py-1 bg-yellow-900/50 border border-yellow-700 rounded-lg">
-                <span className="text-yellow-400 text-xs font-bold">⏸ PAUSED</span>
+              <div className="mt-4 px-3 py-1.5 bg-yellow-900/40 border border-yellow-700 rounded-lg">
+                <span className="text-yellow-400 text-xs font-bold tracking-widest">⏸ PAUSED</span>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Audio Player Widget */}
+      {/* Exercise mini-queue */}
+      <div className="relative z-20 px-4 pb-2">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+          {exercises.map((ex, i) => (
+            <div
+              key={i}
+              className="flex-shrink-0 px-2 py-1 rounded-md text-xs border transition-all"
+              style={
+                i === currentExerciseIndex
+                  ? { borderColor: ringColor, color: ringColor, backgroundColor: ringColor + "15" }
+                  : i < currentExerciseIndex
+                    ? { borderColor: "#2a2a2a", color: "#4b5563", backgroundColor: "transparent" }
+                    : { borderColor: "#2a2a2a", color: "#6b7280", backgroundColor: "transparent" }
+              }
+            >
+              {i < currentExerciseIndex ? "✓" : ex.name.split(" ")[0]}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Audio Widget */}
       <AudioPlayerWidget
         isSpotifyConnected={false}
         currentTrack={{ name: "External Audio", artist: "YouTube Music" }}
-        onPlayPause={() => console.log("Play/Pause")}
-        onSkip={() => console.log("Skip track")}
+        onPlayPause={() => {}}
+        onSkip={() => {}}
       />
 
-      {/* Bottom Controls */}
-      <div className="relative z-20 px-4 py-6 flex items-center justify-center gap-6 bg-commander-dark/80 backdrop-blur border-t border-commander-border safe-area-bottom">
-        {/* Pause/Resume Button */}
+      {/* ── Controls ── */}
+      <div className="relative z-20 px-6 py-5 flex items-center justify-center gap-6 bg-black/60 backdrop-blur border-t border-gray-800 safe-area-bottom">
+        {/* Skip Phase */}
         <button
-          onClick={() => setIsPaused(!isPaused)}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-full font-bold text-white transition-all shadow-lg shadow-blue-500/30 touch-target-min min-w-max"
-          title={isPaused ? "Resume" : "Pause"}
+          onClick={handleSkipPhase}
+          className="w-12 h-12 flex items-center justify-center bg-gray-900 border border-gray-700 hover:border-gray-500 rounded-full transition-all"
+          title="Skip phase"
         >
-          {isPaused ? (
-            <>
-              <Play className="w-5 h-5 fill-white" />
-              Resume
-            </>
-          ) : (
-            <>
-              <Pause className="w-5 h-5 fill-white" />
-              Pause
-            </>
-          )}
+          <SkipForward className="w-5 h-5 text-gray-400" />
         </button>
 
-        {/* Skip Interval Button */}
+        {/* Play / Pause (primary) */}
         <button
-          onClick={handleSkipInterval}
-          className="flex items-center justify-center p-3 bg-commander-surface border-2 border-commander-border hover:border-blue-400 rounded-full transition-all touch-target-min"
-          title="Skip to next interval"
+          onClick={handlePlayPause}
+          className="w-20 h-20 flex items-center justify-center rounded-full font-bold text-black transition-all shadow-lg hover:scale-105 active:scale-95"
+          style={{ backgroundColor: "#00E5FF", boxShadow: "0 0 24px #00E5FF44" }}
+          title={isPaused ? "Resume" : "Pause"}
         >
-          <SkipForward className="w-5 h-5 text-blue-400" />
+          {isPaused
+            ? <Play className="w-8 h-8 fill-black" />
+            : <Pause className="w-8 h-8 fill-black" />
+          }
+        </button>
+
+        {/* End Workout */}
+        <button
+          onClick={handleEndWorkout}
+          className="w-12 h-12 flex items-center justify-center bg-red-950 border border-red-800 hover:border-red-600 rounded-full transition-all"
+          title="End workout"
+        >
+          <X className="w-5 h-5 text-red-400" />
         </button>
       </div>
+
+      {/* ── Exit Confirmation Dialog ── */}
+      {showExitConfirm && (
+        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-[#1a1a1a] border border-gray-700 rounded-2xl p-6 w-full max-w-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertTriangle className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+              <p className="text-white font-black text-lg">End Workout?</p>
+            </div>
+            <p className="text-gray-400 text-sm mb-6">
+              You're on round {currentRound} of {totalRounds}. Your progress won't be saved.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={cancelExit}
+                className="flex-1 py-3 rounded-xl border border-gray-700 text-white font-bold text-sm hover:border-gray-500 transition-all"
+              >
+                Keep Going
+              </button>
+              <button
+                onClick={confirmExit}
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm transition-all"
+              >
+                End It
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
