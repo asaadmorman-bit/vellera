@@ -143,16 +143,21 @@ export default function RecoveryCommandCenter() {
 
   useEffect(() => {
     const init = async () => {
-      const [, providers] = await Promise.all([loadTodayLog(), detectProviders()]);
-      // Auto-sync only if no log exists yet today or it was synced more than 1 hour ago
-      const existing = await base44.entities.BiometricLog.filter({ date: today });
-      const needsSync = existing.length === 0 || (existing[0]?.updated_date && Date.now() - new Date(existing[0].updated_date) > 3600000);
-      if (needsSync && providers.length) {
-        await autoSync(providers);
+      try {
+        await loadTodayLog();
+        const providers = await detectProviders();
+        // Auto-sync only if no log exists yet today or it was synced more than 1 hour ago
+        const existing = await base44.entities.BiometricLog.filter({ date: today });
+        const needsSync = existing.length === 0 || (existing[0]?.updated_date && Date.now() - new Date(existing[0].updated_date) > 3600000);
+        if (needsSync && providers.length) {
+          await autoSync(providers);
+        }
+      } catch {
+        // silent
       }
     };
     init();
-  }, []);
+  }, [today, loadTodayLog, detectProviders, autoSync]);
 
   const recovery = log?.recovery_pct ?? null;
   const zone = recovery !== null ? getZone(recovery) : null;
