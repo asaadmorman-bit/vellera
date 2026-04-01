@@ -73,8 +73,8 @@ export default function Dashboard() {
             console.warn('Award achievements failed (rate limited):', err.message);
           });
         }
-        }
-        });
+      }
+    });
 
     base44.analytics.track({
       eventName: "daily_login",
