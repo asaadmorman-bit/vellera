@@ -27,7 +27,11 @@ export default function WeightTracker() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    // Stagger to avoid rate limit burst on dashboard mount
+    const timer = setTimeout(() => load(), 200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const saveWeight = async () => {
     if (!inputWeight) return;

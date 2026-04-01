@@ -6,16 +6,19 @@ export default function DailyFocus() {
   const [technique, setTechnique] = useState(null);
 
   useEffect(() => {
-    base44.entities.Technique.list("-last_drilled", 50).then(techs => {
-      if (!techs.length) return;
-      // Find technique with oldest (or missing) last_drilled date
-      const sorted = [...techs].sort((a, b) => {
-        if (!a.last_drilled) return -1;
-        if (!b.last_drilled) return 1;
-        return a.last_drilled.localeCompare(b.last_drilled);
+    // Stagger to avoid rate limit burst on dashboard mount
+    const timer = setTimeout(() => {
+      base44.entities.Technique.list("-last_drilled", 50).then(techs => {
+        if (!techs.length) return;
+        const sorted = [...techs].sort((a, b) => {
+          if (!a.last_drilled) return -1;
+          if (!b.last_drilled) return 1;
+          return a.last_drilled.localeCompare(b.last_drilled);
+        });
+        setTechnique(sorted[0]);
       });
-      setTechnique(sorted[0]);
-    });
+    }, 400);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!technique) return null;

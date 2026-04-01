@@ -11,7 +11,7 @@ function getLast7Days() {
   });
 }
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   return (
@@ -35,57 +35,61 @@ export default function RecoveryPerformanceWidget() {
     const days = getLast7Days();
     const since = days[0];
 
-    Promise.all([
-      base44.entities.BiometricLog.list("-date", 14),
-      base44.entities.TrainingSession.list("-date", 14),
-    ]).then(([bios, sessions]) => {
-      const bioMap = {};
-      bios.forEach(b => { if (b.date >= since) bioMap[b.date] = b; });
+    // Staggered delay to avoid rate limit burst with other dashboard queries
+    const timer = setTimeout(() => {
+      Promise.all([
+        base44.entities.BiometricLog.list("-date", 14),
+        base44.entities.TrainingSession.list("-date", 14),
+      ]).then(([bios, sessions]) => {
+        const bioMap = {};
+        bios.forEach(b => { if (b.date >= since) bioMap[b.date] = b; });
 
-      const sessionMap = {};
-      sessions.forEach(s => {
-        if (s.date >= since) {
-          if (!sessionMap[s.date]) sessionMap[s.date] = { intensity: 0, gasLevel: 0, count: 0 };
-          sessionMap[s.date].intensity = Math.max(sessionMap[s.date].intensity, s.intensity || 0);
-          sessionMap[s.date].gasLevel = Math.max(sessionMap[s.date].gasLevel, s.gas_level || 0);
-          sessionMap[s.date].count++;
-        }
+        const sessionMap = {};
+        sessions.forEach(s => {
+          if (s.date >= since) {
+            if (!sessionMap[s.date]) sessionMap[s.date] = { intensity: 0, gasLevel: 0, count: 0 };
+            sessionMap[s.date].intensity = Math.max(sessionMap[s.date].intensity, s.intensity || 0);
+            sessionMap[s.date].gasLevel = Math.max(sessionMap[s.date].gasLevel, s.gas_level || 0);
+            sessionMap[s.date].count++;
+          }
+        });
+
+        const flagged = [];
+        const chartData = days.map(date => {
+          const bio = bioMap[date];
+          const sess = sessionMap[date];
+          const dayLabel = new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+          const shortDay = new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" });
+
+          const recovery = bio?.recovery_pct ?? null;
+          const hrv = bio?.hrv ?? null;
+          const intensity = sess?.intensity || null;
+          const gasLevel = sess?.gasLevel || null;
+
+          let alert = null;
+          let alertType = null;
+          if (recovery !== null && recovery < 50 && gasLevel !== null && gasLevel >= 7) {
+            alert = "Low recovery + high gas output — risk of overtraining";
+            alertType = "danger";
+            flagged.push({ date: dayLabel, msg: alert });
+          } else if (recovery !== null && recovery < 60 && intensity !== null && intensity >= 8) {
+            alert = "Below-average recovery with high intensity session";
+            alertType = "warning";
+            flagged.push({ date: dayLabel, msg: alert });
+          } else if (recovery !== null && recovery >= 80 && gasLevel !== null && gasLevel <= 4) {
+            alertType = "good";
+          }
+
+          return { date, dayLabel, shortDay, recovery, hrv, intensity, gasLevel, alert, alertType };
+        });
+
+        setData(chartData);
+        setAlerts(flagged);
+        setLoading(false);
       });
+    }, 600);
 
-      const flagged = [];
-      const chartData = days.map(date => {
-        const bio = bioMap[date];
-        const sess = sessionMap[date];
-        const dayLabel = new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-        const shortDay = new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" });
-
-        const recovery = bio?.recovery_pct ?? null;
-        const hrv = bio?.hrv ?? null;
-        const intensity = sess?.intensity || null;
-        const gasLevel = sess?.gasLevel || null;
-
-        // Detect correlation: low recovery + high gas usage
-        let alert = null;
-        let alertType = null;
-        if (recovery !== null && recovery < 50 && gasLevel !== null && gasLevel >= 7) {
-          alert = "Low recovery + high gas output — risk of overtraining";
-          alertType = "danger";
-          flagged.push({ date: dayLabel, msg: alert });
-        } else if (recovery !== null && recovery < 60 && intensity !== null && intensity >= 8) {
-          alert = "Below-average recovery with high intensity session";
-          alertType = "warning";
-          flagged.push({ date: dayLabel, msg: alert });
-        } else if (recovery !== null && recovery >= 80 && gasLevel !== null && gasLevel <= 4) {
-          alertType = "good";
-        }
-
-        return { date, dayLabel, shortDay, recovery, hrv, intensity, gasLevel, alert, alertType };
-      });
-
-      setData(chartData);
-      setAlerts(flagged);
-      setLoading(false);
-    });
+    return () => clearTimeout(timer);
   }, []);
 
   const hasData = data.some(d => d.recovery !== null || d.intensity !== null);
@@ -115,8 +119,6 @@ export default function RecoveryPerformanceWidget() {
               <YAxis domain={[0, 10]} tick={{ fill: "#6b7280", fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
               <Tooltip content={<CustomTooltip />} />
               <ReferenceLine y={5} stroke="#374151" strokeDasharray="3 3" />
-
-              {/* Gas Level as bars — colored red if high */}
               <Bar dataKey="gasLevel" name="Gas Used" radius={[3, 3, 0, 0]} maxBarSize={18}>
                 {data.map((entry, i) => (
                   <Cell
@@ -132,11 +134,7 @@ export default function RecoveryPerformanceWidget() {
                   />
                 ))}
               </Bar>
-
-              {/* Intensity as smaller bars */}
               <Bar dataKey="intensity" name="Intensity" radius={[2, 2, 0, 0]} maxBarSize={10} fill="#f59e0b" opacity={0.5} />
-
-              {/* Recovery % scaled to 0-10 */}
               <Line
                 dataKey={d => d.recovery !== null ? d.recovery / 10 : null}
                 name="Recovery"
@@ -146,8 +144,6 @@ export default function RecoveryPerformanceWidget() {
                 connectNulls={false}
                 type="monotone"
               />
-
-              {/* HRV scaled to 0-10 range (assume max ~100ms) */}
               <Line
                 dataKey={d => d.hrv !== null ? Math.min(10, d.hrv / 10) : null}
                 name="HRV"
@@ -161,7 +157,6 @@ export default function RecoveryPerformanceWidget() {
             </ComposedChart>
           </ResponsiveContainer>
 
-          {/* Legend */}
           <div className="flex flex-wrap gap-3 text-xs">
             {[
               { color: "bg-red-600", label: "Gas Used (bars)" },
@@ -176,7 +171,6 @@ export default function RecoveryPerformanceWidget() {
             ))}
           </div>
 
-          {/* Alerts */}
           {alerts.length > 0 && (
             <div className="space-y-1.5 pt-1 border-t border-commander-border">
               {alerts.map((a, i) => (
