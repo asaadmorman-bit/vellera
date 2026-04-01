@@ -12,9 +12,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const apiKey = Deno.env.get('SPOTIFY_API_KEY');
-    if (!apiKey) {
-      return Response.json({ error: 'Spotify API key not configured' }, { status: 500 });
+    const clientId = Deno.env.get('SPOTIFY_CLIENT_ID');
+    const clientSecret = Deno.env.get('SPOTIFY_CLIENT_SECRET');
+    if (!clientId || !clientSecret) {
+      return Response.json({ error: 'Spotify credentials not configured' }, { status: 500 });
     }
 
     const { action, query } = await req.json();
@@ -23,7 +24,7 @@ Deno.serve(async (req) => {
     const tokenRes = await fetch(SPOTIFY_AUTH, {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${btoa(`${apiKey}:`)}`,
+        'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: 'grant_type=client_credentials',

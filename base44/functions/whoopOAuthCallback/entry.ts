@@ -16,12 +16,23 @@ Deno.serve(async (req) => {
     });
   }
 
-  let userEmail;
-  try {
-    userEmail = JSON.parse(atob(state)).email;
-  } catch {
-    return new Response("Invalid state", { status: 400 });
+  // Verify state token and retrieve user email
+  const base44 = createClientFromRequest(req);
+  const agents = await base44.asServiceRole.entities.UserAgent.filter({
+    state_token: state,
+    provider: 'whoop',
+  });
+
+  if (agents.length === 0) {
+    return new Response("Invalid or expired state token", { status: 401 });
   }
+
+  const agent = agents[0];
+  if (new Date(agent.expires_at) < new Date()) {
+    return new Response("State token expired", { status: 401 });
+  }
+
+  const userEmail = agent.user_email;
 
   // Exchange code for tokens
   const tokenRes = await fetch("https://api.prod.whoop.com/oauth/oauth2/token", {
@@ -50,8 +61,7 @@ Deno.serve(async (req) => {
   });
   const profile = profileRes.ok ? await profileRes.json() : {};
 
-  // Store tokens using service role
-  const base44 = createClientFromRequest(req);
+  // Store tokens (base44 already initialized above)
   const existing = await base44.asServiceRole.entities.WhoopToken.filter({ user_email: userEmail });
 
   if (existing.length > 0) {
@@ -72,6 +82,9 @@ Deno.serve(async (req) => {
       last_synced: new Date().toISOString(),
     });
   }
+
+  // Clean up used state token
+  await base44.asServiceRole.entities.UserAgent.delete(agent.id);
 
   // Redirect back to app with success
   return new Response(
