@@ -103,6 +103,7 @@ const AuthenticatedApp = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes>
+      <Route path="/landing" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Landing /></Suspense></PageTransition>} />
       <Route path="/welcome" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Welcome /></Suspense></PageTransition>} />
       <Route path="/workout" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ActiveWorkout /></Suspense></PageTransition>} />
       <Route element={<TabStackLayout />}>
