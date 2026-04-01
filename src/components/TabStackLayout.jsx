@@ -44,6 +44,7 @@ const MORE_NAV = [
   { path: "/hub", label: "Training Hub", icon: BookOpen },
   { path: "/wellness", label: "Wellness", icon: Apple },
   { path: "/events", label: "Events", icon: Trophy },
+  { path: "/squads", label: "Squads", icon: Users },
   { path: "/settings", label: "Settings", icon: Shield },
 ];
 
