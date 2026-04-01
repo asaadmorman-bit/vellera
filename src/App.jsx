@@ -47,6 +47,7 @@ const MasteryMap = lazy(() => import('./pages/MasteryMap'));
 const PreWorkoutPrep = lazy(() => import('./pages/PreWorkoutPrep'));
 const SupplementLog = lazy(() => import('./pages/SupplementLog'));
 const InstructorDashboard = lazy(() => import('./pages/InstructorDashboard'));
+const StudentProgressTracking = lazy(() => import('./pages/StudentProgressTracking'));
 const StudentFeedbackCenter = lazy(() => import('./pages/StudentFeedbackCenter'));
 
 const LoadingSpinner = () => (
@@ -122,6 +123,7 @@ const AuthenticatedApp = () => {
       <Route path="/prep" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><PreWorkoutPrep /></Suspense></PageTransition>} />
       <Route path="/supplements" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><SupplementLog /></Suspense></PageTransition>} />
       <Route path="/instructor" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><InstructorDashboard /></Suspense></PageTransition>} />
+      <Route path="/student-progress" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><StudentProgressTracking /></Suspense></PageTransition>} />
       <Route path="/feedback" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><StudentFeedbackCenter /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
