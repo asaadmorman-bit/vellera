@@ -70,6 +70,51 @@
     "apple_music_token": {
       "type": "string",
       "title": "Apple Music Token (Future Integration)"
+    },
+    "onboarding_complete": {
+      "type": "boolean",
+      "title": "Onboarding Complete",
+      "default": false
+    },
+    "onboarding_goal": {
+      "type": "string",
+      "enum": [
+        "General Fitness & Health",
+        "Tactical & First Responder Readiness",
+        "Combat Sports & Competition",
+        "Rehab, Mobility & Whole Health"
+      ],
+      "title": "Primary Goal"
+    },
+    "onboarding_journey": {
+      "type": "string",
+      "enum": [
+        "Just starting out / Getting back into it",
+        "Consistent but want to level up",
+        "Preparing for a season/fight",
+        "Active Duty / Professional"
+      ],
+      "title": "Journey Stage"
+    },
+    "onboarding_equipment": {
+      "type": "string",
+      "enum": [
+        "Bodyweight only",
+        "Full Gym Access",
+        "Heavy Bag / Mat Space",
+        "Need low-impact/joint-friendly options"
+      ],
+      "title": "Equipment & Limitations"
+    },
+    "vellera_track": {
+      "type": "string",
+      "enum": [
+        "whole_health",
+        "tactical",
+        "competitor",
+        "momentum"
+      ],
+      "title": "Vellera Track"
     }
   },
   "required": [],

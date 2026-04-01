@@ -9,6 +9,7 @@ import RecoveryPerformanceWidget from "../components/RecoveryPerformanceWidget";
 import DailyFocus from "../components/DailyFocus";
 import WeightTracker from "../components/WeightTracker";
 import DailyMatPriority from "../components/DailyMatPriority";
+import AdaptiveHome from "../components/AdaptiveHome";
 import { Droplets, Flame, Moon, Heart, Zap, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -140,6 +141,9 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Adaptive Home — personalized track greeting + featured routines */}
+      <AdaptiveHome />
 
       {/* Daily Mat Priority — AI-generated morning brief */}
       <DailyMatPriority />
