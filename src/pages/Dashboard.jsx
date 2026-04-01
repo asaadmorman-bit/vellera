@@ -8,6 +8,7 @@ import { useTabStack } from "../hooks/useTabStack";
 import RecoveryPerformanceWidget from "../components/RecoveryPerformanceWidget";
 import RecoveryCommandCenter from "../components/RecoveryCommandCenter";
 import WhoopConnect from "../components/WhoopConnect";
+import WeeklyTrainingTrends from "../components/WeeklyTrainingTrends";
 import StrengthMetrics from "../components/StrengthMetrics";
 import BodybuildingMetrics from "../components/BodybuildingMetrics";
 import EnduranceMetrics from "../components/EnduranceMetrics";
@@ -252,6 +253,9 @@ export default function Dashboard() {
 
       {/* Recovery vs Performance Widget */}
       <RecoveryPerformanceWidget />
+
+      {/* Weekly Training Trends */}
+      <WeeklyTrainingTrends />
 
       {/* Adaptive Workout Dashboard — filtered by user track */}
       <AdaptiveWorkoutDashboard />
