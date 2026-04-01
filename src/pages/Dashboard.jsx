@@ -6,6 +6,7 @@ import SafetyValve from "../components/SafetyValve";
 import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { useTabStack } from "../hooks/useTabStack";
 import RecoveryPerformanceWidget from "../components/RecoveryPerformanceWidget";
+import WearableImport from "../components/WearableImport";
 import StreaksWidget from "../components/StreaksWidget";
 import DailyFocus from "../components/DailyFocus";
 import WeightTracker from "../components/WeightTracker";
@@ -217,6 +218,9 @@ export default function Dashboard() {
           <p className="text-commander-muted text-xs">250 lbs ÷ 2 + 32 oz per mat hour</p>
         </div>
       </div>
+
+      {/* Wearable Import */}
+      <WearableImport />
 
       {/* Recovery vs Performance Widget */}
       <RecoveryPerformanceWidget />
