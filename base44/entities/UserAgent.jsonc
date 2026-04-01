@@ -1,0 +1,89 @@
+{
+  "name": "UserAgent",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Agent Name"
+    },
+    "system_prompt": {
+      "type": "string",
+      "title": "Agent Persona / System Prompt"
+    },
+    "voice_id": {
+      "type": "string",
+      "title": "Voice ID",
+      "enum": [
+        "deep_male",
+        "energetic_female",
+        "calm_androgynous",
+        "gritty_male",
+        "hype_female"
+      ],
+      "default": "deep_male"
+    },
+    "is_active": {
+      "type": "boolean",
+      "title": "Active Agent",
+      "default": false
+    },
+    "trigger_on_start": {
+      "type": "boolean",
+      "title": "Trigger on Workout Start",
+      "default": true
+    },
+    "trigger_on_halfway": {
+      "type": "boolean",
+      "title": "Trigger at Halfway Point",
+      "default": true
+    },
+    "trigger_on_rest": {
+      "type": "boolean",
+      "title": "Trigger on Rest Phase",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "system_prompt"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

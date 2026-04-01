@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { base44 } from "@/api/base44Client";
 import { X, Pause, Play, SkipForward, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AudioPlayerWidget from "../components/AudioPlayerWidget";
@@ -87,15 +88,60 @@ export default function ActiveWorkout({ workout: workoutProp }) {
   const [currentRound, setCurrentRound]                 = useState(1);
   const [isComplete, setIsComplete]                     = useState(false);
   const [showExitConfirm, setShowExitConfirm]           = useState(false);
+  const [agentCoach, setAgentCoach]                     = useState(null);
+  const [agentLine, setAgentLine]                       = useState(null);
+  const halfwayFiredRef                                 = useRef(false);
   const exitConfirmRef = useRef(null);
 
   const currentExercise = exercises[currentExerciseIndex] || exercises[exercises.length - 1];
   const nextExercise    = exercises[currentExerciseIndex + 1] || null;
   const totalExercises  = exercises.length;
 
+  // ── Load active agent coach ──────────────────────────────────────────────────
+  useEffect(() => {
+    base44.entities.UserAgent.filter({ is_active: true }).then(agents => {
+      if (agents[0]) setAgentCoach(agents[0]);
+    }).catch(() => {});
+  }, []);
+
+  // ── Agent trigger helper ──────────────────────────────────────────────────────
+  const triggerAgent = useCallback(async (triggerType) => {
+    if (!agentCoach) return;
+    const triggerKey = `trigger_on_${triggerType === "halfway" ? "halfway" : triggerType === "rest" ? "rest" : "start"}`;
+    if (!agentCoach[triggerKey]) return;
+    try {
+      const res = await base44.functions.invoke("generateAgentResponse", {
+        agent: { name: agentCoach.name, system_prompt: agentCoach.system_prompt, voice_id: agentCoach.voice_id },
+        context: {
+          trigger: triggerType,
+          exercise_name: currentExercise.name,
+          time_elapsed_seconds: phaseDuration - timeLeft,
+          time_remaining_seconds: timeLeft,
+          current_round: currentRound,
+          total_rounds: totalRounds,
+          streak_days: 0,
+          recovery_pct: null,
+        },
+      });
+      const text = res.data?.text;
+      if (text) {
+        setAgentLine(text);
+        // Web Speech API TTS fallback (until ElevenLabs is wired up)
+        // AUDIO DUCKING: lower background volume before speaking
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.rate = 1.05;
+          utter.volume = 1.0;
+          // RESTORE background volume on end: utter.onend = () => { /* raise volume */ }
+          window.speechSynthesis.speak(utter);
+        }
+        setTimeout(() => setAgentLine(null), 8000);
+      }
+    } catch { /* silent fail */ }
+  }, [agentCoach, currentExercise, timeLeft, currentRound, totalRounds]);
+
   // ── Screen Wakelock ─────────────────────────────────────────────────────────
-  // Prevents screen sleep during active workout.
-  // Native equivalent: RNKeepAwake.keepAwake() / [UIApplication sharedApplication].idleTimerDisabled = YES
   useEffect(() => {
     let wakeLock = null;
     if (!isPaused && !isComplete && "wakeLock" in navigator) {
@@ -105,6 +151,19 @@ export default function ActiveWorkout({ workout: workoutProp }) {
     }
     return () => { wakeLock?.release().catch(() => {}); };
   }, [isPaused, isComplete]);
+
+  // ── Halfway point trigger ────────────────────────────────────────────────────
+  useEffect(() => {
+    if (isResting || isPaused || isComplete) return;
+    const halfway = Math.floor(currentExercise.duration_seconds / 2);
+    if (timeLeft === halfway && !halfwayFiredRef.current) {
+      halfwayFiredRef.current = true;
+      triggerAgent("halfway");
+    }
+  }, [timeLeft, isResting, isPaused, isComplete, currentExercise, triggerAgent]);
+
+  // Reset halfway flag on exercise change
+  useEffect(() => { halfwayFiredRef.current = false; }, [currentExerciseIndex]);
 
   // ── Phase Transition Logic ───────────────────────────────────────────────────
   const advancePhase = useCallback(async () => {
@@ -139,6 +198,7 @@ export default function ActiveWorkout({ workout: workoutProp }) {
         // Transition to REST
         setIsResting(true);
         setTimeLeft(ex.rest_seconds);
+        triggerAgent("rest");
         await playPhaseAlert("rest");
       } else {
         // No rest — go straight to next exercise
@@ -209,6 +269,13 @@ export default function ActiveWorkout({ workout: workoutProp }) {
     setShowExitConfirm(false);
     setIsPaused(false);
   };
+
+  // ── onWorkoutStart agent trigger ─────────────────────────────────────────────
+  useEffect(() => {
+    const timer = setTimeout(() => triggerAgent("start"), 1500);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // fire once on mount
 
   // ── Derived Display Values ───────────────────────────────────────────────────
   const phaseDuration = isResting ? currentExercise.rest_seconds : currentExercise.duration_seconds;
@@ -321,6 +388,14 @@ export default function ActiveWorkout({ workout: workoutProp }) {
           </div>
         </div>
       </div>
+
+      {/* Agent Coach Line */}
+      {agentLine && agentCoach && (
+        <div className="relative z-20 mx-4 px-4 py-3 rounded-xl border border-[#00E5FF33] bg-[#00E5FF08] animate-pulse">
+          <p className="text-xs font-bold tracking-widest mb-1" style={{ color: "#00E5FF" }}>{agentCoach.name}</p>
+          <p className="text-white text-sm italic leading-snug">"{agentLine}"</p>
+        </div>
+      )}
 
       {/* Exercise mini-queue */}
       <div className="relative z-20 px-4 pb-2">
