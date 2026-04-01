@@ -38,10 +38,14 @@ export default function WhoopConnect() {
   }, []);
 
   const handleConnect = async () => {
-    const res = await base44.functions.invoke("whoopOAuthStart", {});
-    const url = res.data?.url;
-    if (!url) { toast.error("Failed to get auth URL"); return; }
-    window.open(url, "_blank", "width=500,height=700");
+    try {
+      const res = await base44.functions.invoke("whoopOAuthStart", {});
+      const url = res.data?.url;
+      if (!url) { toast.error("Failed to get auth URL"); return; }
+      window.open(url, "_blank", "width=500,height=700");
+    } catch (e) {
+      toast.error("Connection error: " + (e.response?.data?.message || e.message));
+    }
   };
 
   const handleSync = async () => {
