@@ -60,29 +60,36 @@ export default function Dashboard() {
   const [userProfile, setUserProfile] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(u => {
-      if (u) {
-        base44.entities.UserProfile.filter({ created_by: u.email }).then(profiles => {
+    const initDashboard = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (user) {
+          const profiles = await base44.entities.UserProfile.filter({ created_by: user.email });
           setUserProfile(profiles[0] || null);
-        });
-        // Award achievements on login (only run once per session)
-        const sessionKey = 'achievementsRun';
-        if (!sessionStorage.getItem(sessionKey)) {
-          sessionStorage.setItem(sessionKey, 'true');
-          base44.functions.invoke('awardAchievements', {}).catch(err => {
-            console.warn('Award achievements failed (rate limited):', err.message);
-          });
-        }
-      }
-    });
 
-    base44.analytics.track({
-      eventName: "daily_login",
-      properties: {
-        day_of_week: new Date().toLocaleDateString("en-US", { weekday: "long" }),
-        hour_of_day: new Date().getHours(),
-      },
-    });
+          // Award achievements on login (only run once per session)
+          const sessionKey = 'achievementsRun';
+          if (!sessionStorage.getItem(sessionKey)) {
+            sessionStorage.setItem(sessionKey, 'true');
+            base44.functions.invoke('awardAchievements', {}).catch(err => {
+              console.warn('Award achievements failed (rate limited):', err.message);
+            });
+          }
+        }
+
+        base44.analytics.track({
+          eventName: "daily_login",
+          properties: {
+            day_of_week: new Date().toLocaleDateString("en-US", { weekday: "long" }),
+            hour_of_day: new Date().getHours(),
+          },
+        });
+      } catch (err) {
+        console.error('Dashboard init failed:', err);
+      }
+    };
+
+    initDashboard();
   }, []);
 
   const today = new Date();
