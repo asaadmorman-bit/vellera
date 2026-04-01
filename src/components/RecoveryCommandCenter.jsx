@@ -142,22 +142,40 @@ export default function RecoveryCommandCenter() {
   };
 
   useEffect(() => {
+    let isMounted = true;
     const init = async () => {
       try {
-        await loadTodayLog();
-        const providers = await detectProviders();
-        // Auto-sync only if no log exists yet today or it was synced more than 1 hour ago
-        const existing = await base44.entities.BiometricLog.filter({ date: today });
-        const needsSync = existing.length === 0 || (existing[0]?.updated_date && Date.now() - new Date(existing[0].updated_date) > 3600000);
+        const logs = await base44.entities.BiometricLog.filter({ date: today });
+        if (!isMounted) return;
+        setLog(logs[0] || null);
+        
+        const [whoopTokens, wearableTokens] = await Promise.all([
+          base44.entities.WhoopToken.filter({}).catch(() => []),
+          base44.entities.WearableToken.filter({}).catch(() => []),
+        ]);
+        if (!isMounted) return;
+        const providers = [];
+        if (whoopTokens.length > 0) providers.push({ name: "whoop", fn: "whoopSync", token: whoopTokens[0] });
+        const fitbitToken = wearableTokens.find(t => t.provider === "fitbit");
+        if (fitbitToken) providers.push({ name: "fitbit", fn: "fitbitSync", token: fitbitToken });
+        setConnectedProviders(providers);
+        
+        const needsSync = logs.length === 0 || (logs[0]?.updated_date && Date.now() - new Date(logs[0].updated_date) > 3600000);
         if (needsSync && providers.length) {
-          await autoSync(providers);
+          await Promise.all(providers.map(p => base44.functions.invoke(p.fn, {})));
+          if (isMounted) {
+            setLastSynced(new Date());
+            const updated = await base44.entities.BiometricLog.filter({ date: today });
+            setLog(updated[0] || null);
+          }
         }
       } catch {
         // silent
       }
     };
     init();
-  }, [today, loadTodayLog, detectProviders, autoSync]);
+    return () => { isMounted = false; };
+  }, [today]);
 
   const recovery = log?.recovery_pct ?? null;
   const zone = recovery !== null ? getZone(recovery) : null;
