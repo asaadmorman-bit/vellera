@@ -49,10 +49,8 @@ export default function Settings() {
 
   const handleLogout = async () => {
     try {
-      toast.success("Logging out...");
-      setTimeout(() => {
-        base44.auth.logout();
-      }, 500);
+      await base44.auth.logout("/landing");
+      toast.success("Logged out successfully");
     } catch (err) {
       toast.error("Logout failed: " + err.message);
     }
@@ -89,17 +87,14 @@ export default function Settings() {
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
     try {
-      const response = await fetch('/api/deleteUserAccount', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) throw new Error('Failed to delete account');
-      toast.success("Account deleted successfully");
+      // Call backend function to delete user account
+      await base44.functions.invoke('deleteUserAccount', {});
+      toast.success("Account deleted. Redirecting...");
       setTimeout(() => {
-        window.location.href = "/";
+        base44.auth.logout("/landing");
       }, 1000);
     } catch (error) {
-      toast.error(error.message || "Failed to delete account");
+      toast.error(error.response?.data?.message || "Failed to delete account");
     } finally {
       setIsDeleting(false);
       setShowDeleteDialog(false);
@@ -122,7 +117,7 @@ export default function Settings() {
       {/* Personal Info Section */}
       {user && (
         <div className="bg-commander-surface border border-commander-border rounded-xl p-4 space-y-4">
-          <p className="text-xs text-commander-muted uppercase tracking-widest font-bold">Personal Information</p>
+          <p className="text-xs text-commander-muted uppercase tracking-widest font-bold">Account Information</p>
           
           <div>
             <p className="text-commander-muted text-xs mb-1">Full Name</p>
@@ -130,8 +125,13 @@ export default function Settings() {
           </div>
           
           <div>
-            <p className="text-commander-muted text-xs mb-1">Email</p>
+            <p className="text-commander-muted text-xs mb-1">Email Address</p>
             <p className="text-white text-sm font-medium">{user.email}</p>
+          </div>
+
+          <div>
+            <p className="text-commander-muted text-xs mb-1">User Role</p>
+            <p className="text-white text-sm font-medium capitalize">{user.role || "user"}</p>
           </div>
         </div>
       )}
@@ -190,6 +190,18 @@ export default function Settings() {
                   <p className="text-white">{editForm.age} years</p>
                 </div>
               )}
+              {editForm.location && (
+                <div>
+                  <p className="text-commander-muted text-xs mb-1">Location</p>
+                  <p className="text-white">{editForm.location}</p>
+                </div>
+              )}
+              {editForm.bio && (
+                <div>
+                  <p className="text-commander-muted text-xs mb-1">Bio</p>
+                  <p className="text-white text-xs">{editForm.bio}</p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -234,7 +246,26 @@ export default function Settings() {
                   className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm min-h-[44px]"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs text-commander-muted block mb-2">Location</label>
+                <input
+                  type="text"
+                  value={editForm.location || ""}
+                  onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                  placeholder="City, State"
+                  className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm min-h-[44px]"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-commander-muted block mb-2">Bio</label>
+                <textarea
+                  value={editForm.bio || ""}
+                  onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                  placeholder="Tell us about your training background..."
+                  className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm min-h-[80px]"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="text-xs text-commander-muted block mb-2">Height (cm)</label>
                   <input
@@ -255,16 +286,16 @@ export default function Settings() {
                     className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm min-h-[44px]"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="text-xs text-commander-muted block mb-2">Age (years)</label>
-                <input
-                  type="number"
-                  value={editForm.age || ""}
-                  onChange={(e) => setEditForm({ ...editForm, age: parseInt(e.target.value) || null })}
-                  placeholder="43"
-                  className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm min-h-[44px]"
-                />
+                <div>
+                  <label className="text-xs text-commander-muted block mb-2">Age (years)</label>
+                  <input
+                    type="number"
+                    value={editForm.age || ""}
+                    onChange={(e) => setEditForm({ ...editForm, age: parseInt(e.target.value) || null })}
+                    placeholder="43"
+                    className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm min-h-[44px]"
+                  />
+                </div>
               </div>
               <div className="flex gap-2 pt-2">
                 <button
