@@ -29,11 +29,17 @@ export default function Settings() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        const profiles = await base44.entities.UserProfile.filter({ created_by: currentUser.email }, "-created_date", 1);
-        if (profiles.length > 0) {
-          setProfile(profiles[0]);
-          setEditForm(profiles[0]);
+        let profiles = await base44.entities.UserProfile.filter({ created_by: currentUser.email }, "-created_date", 1);
+        if (profiles.length === 0) {
+          // Create default profile if none exists
+          const newProfile = await base44.entities.UserProfile.create({
+            onboarding_goal: "General Fitness & Health",
+            onboarding_journey: "Consistent but want to level up",
+          });
+          profiles = [newProfile];
         }
+        setProfile(profiles[0]);
+        setEditForm(profiles[0]);
       } catch (err) {
         console.error("Failed to load profile:", err);
       }
