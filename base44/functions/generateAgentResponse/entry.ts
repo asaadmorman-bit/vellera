@@ -29,9 +29,13 @@ Deno.serve(async (req) => {
 
     const { agent, context } = await req.json();
 
-    if (!agent?.system_prompt || !context?.trigger) {
-      return Response.json({ error: "Missing agent or context" }, { status: 400 });
-    }
+    // ── Fetch today's readiness check-in ──────────────────────────────────────
+    const todayStr = new Date().toISOString().split("T")[0];
+    let readiness = null;
+    try {
+      const records = await base44.entities.ReadinessCheckIn.filter({ date: todayStr });
+      if (records[0]) readiness = records[0];
+    } catch { /* non-blocking */ }
 
     // ── Prompt Construction Engine ────────────────────────────────────────────
     const triggerDescriptions = {
@@ -41,6 +45,22 @@ Deno.serve(async (req) => {
       complete: `The user just completed their full workout (${context.total_rounds} rounds). Give them a powerful closing statement. Max 2 sentences.`,
     };
 
+    // Build readiness tone modifier
+    let readinessToneBlock = "";
+    if (readiness) {
+      const score = readiness.readiness_score ?? 50;
+      const sleepLabel = ["terrible", "poor", "okay", "good", "great"][readiness.sleep_quality - 1] ?? "unknown";
+      const sorenessLabel = ["none", "mild", "moderate", "heavy", "severe"][readiness.soreness - 1] ?? "unknown";
+      const stressLabel = ["calm", "light", "moderate", "high", "maxed out"][readiness.stress - 1] ?? "unknown";
+      if (score >= 70) {
+        readinessToneBlock = `READINESS STATUS: HIGH (${score}/100). Sleep: ${sleepLabel}, Soreness: ${sorenessLabel}, Stress: ${stressLabel}. The athlete is fresh and ready. Be INTENSE, AGGRESSIVE, and PUSH HARD. No excuses — demand max effort.`;
+      } else if (score >= 45) {
+        readinessToneBlock = `READINESS STATUS: MODERATE (${score}/100). Sleep: ${sleepLabel}, Soreness: ${sorenessLabel}, Stress: ${stressLabel}. The athlete is a bit beaten up. Be encouraging but smart. Acknowledge the grind, recommend staying technical over going all-out. Quality reps over ego lifts.`;
+      } else {
+        readinessToneBlock = `READINESS STATUS: LOW (${score}/100). Sleep: ${sleepLabel}, Soreness: ${sorenessLabel}, Stress: ${stressLabel}. The athlete is running on empty. Be SUPPORTIVE and CARING. Praise them for showing up. Recommend they focus on movement quality and not push through pain. Recovery is training.`;
+      }
+    }
+
     const contextBlock = [
       context.exercise_name ? `Current exercise: ${context.exercise_name}` : null,
       context.current_round ? `Round ${context.current_round} of ${context.total_rounds}` : null,
@@ -48,13 +68,9 @@ Deno.serve(async (req) => {
       context.recovery_pct != null ? `Recovery score today: ${context.recovery_pct}%` : null,
     ].filter(Boolean).join(". ");
 
-    const fullPrompt = `${agent.system_prompt}
+    const readinessSection = readinessToneBlock ? `\n\nCOACHING TONE DIRECTIVE:\n${readinessToneBlock}` : "";
 
-Athlete context: ${contextBlock || "No biometric data available."}
-
-Task: ${triggerDescriptions[context.trigger] || triggerDescriptions.halfway}
-
-Rules: Stay strictly in character. Be concise (max 2 sentences). Never mention you are an AI.`;
+    const fullPrompt = `${agent.system_prompt}${readinessSection}\n\nAthlete context: ${contextBlock || "No biometric data available."}\n\nTask: ${triggerDescriptions[context.trigger] || triggerDescriptions.halfway}\n\nRules: Stay strictly in character. Be concise (max 2 sentences). Never mention you are an AI.`;
 
     // ── LLM Call — route through unified coach service ─────────────────────────
     const coachRes = await base44.asServiceRole.functions.invoke('generateCoachAudio', {

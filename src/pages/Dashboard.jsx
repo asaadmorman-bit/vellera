@@ -11,6 +11,7 @@ import DailyFocus from "../components/DailyFocus";
 import WeightTracker from "../components/WeightTracker";
 import DailyMatPriority from "../components/DailyMatPriority";
 import AdaptiveHome from "../components/AdaptiveHome";
+import ReadinessCheckIn from "../components/ReadinessCheckIn";
 import AdaptiveWorkoutDashboard from "../components/AdaptiveWorkoutDashboard";
 import { Droplets, Flame, Moon, Heart, Zap, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -143,6 +144,9 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Readiness Check-In */}
+      <ReadinessCheckIn />
 
       {/* Adaptive Home — personalized track greeting + featured routines */}
       <AdaptiveHome />
