@@ -156,10 +156,11 @@ const RootApp = () => {
   
   if (isLoadingAuth) return <LoadingSpinner />;
   
-  // Show public routes if not authenticated (and no user_not_registered error)
-  const isAuthenticated = !authError || authError.type === 'user_not_registered';
+  // Show public app if auth_required error (not logged in)
+  // Show authenticated app for all other cases
+  const isAuthRequired = authError?.type === 'auth_required';
   
-  return isAuthenticated ? <AuthenticatedApp /> : <PublicApp />;
+  return isAuthRequired ? <PublicApp /> : <AuthenticatedApp />;
 };
 
 
