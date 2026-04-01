@@ -108,8 +108,9 @@ const AuthenticatedApp = () => {
       <Route path="/landing" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Landing /></Suspense></PageTransition>} />
       <Route path="/welcome" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Welcome /></Suspense></PageTransition>} />
       <Route path="/workout" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ActiveWorkout /></Suspense></PageTransition>} />
+      <Route path="/" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Landing /></Suspense></PageTransition>} />
       <Route element={<TabStackLayout />}>
-       <Route path="/" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Dashboard /></Suspense></PageTransition>} />
+       <Route path="/dashboard" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Dashboard /></Suspense></PageTransition>} />
        <Route path="/training" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><TrainingLog /></Suspense></PageTransition>} />
        <Route path="/techniques" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><TechniqueLibrary /></Suspense></PageTransition>} />
         <Route path="/recovery" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><Recovery /></Suspense></PageTransition>} />
