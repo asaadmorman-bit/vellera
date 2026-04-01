@@ -12,10 +12,28 @@ const MOTIVATION_MESSAGES = [
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    
+    // Verify user is authenticated
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { squad_id } = await req.json();
 
     if (!squad_id) {
       return Response.json({ error: 'Squad ID required' }, { status: 400 });
+    }
+
+    // Verify user is a captain of this squad
+    const captainCheck = await base44.entities.SquadMembership.filter({
+      squad_id: squad_id,
+      user_email: user.email,
+      role: 'captain'
+    });
+    
+    if (captainCheck.length === 0) {
+      return Response.json({ error: 'Only squad captains can send motivation' }, { status: 403 });
     }
 
     // Get all squad members

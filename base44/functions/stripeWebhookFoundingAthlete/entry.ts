@@ -1,7 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import Stripe from 'npm:stripe@17.0.0';
 
 const FOUNDING_ATHLETE_CAP = 1000;
 const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
+
+if (!STRIPE_WEBHOOK_SECRET || !STRIPE_SECRET_KEY) {
+  throw new Error('Missing Stripe environment variables');
+}
+
+const stripe = new Stripe(STRIPE_SECRET_KEY);
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
@@ -9,14 +17,21 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify Stripe signature (placeholder - use actual Stripe library in production)
+    // Verify Stripe signature
     const signature = req.headers.get("stripe-signature");
     if (!signature) {
       return Response.json({ error: "Missing signature" }, { status: 401 });
     }
 
     const body = await req.text();
-    const event = JSON.parse(body);
+    let event;
+    
+    try {
+      event = await stripe.webhooks.constructEventAsync(body, signature, STRIPE_WEBHOOK_SECRET);
+    } catch (err) {
+      console.error('[Stripe Webhook Verification Failed]', err.message);
+      return Response.json({ error: 'Invalid signature' }, { status: 401 });
+    }
 
     // Initialize Base44 client
     const base44 = createClientFromRequest(req);
