@@ -307,6 +307,10 @@ export default function Blueprint() {
 
   return (
     <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top">
+      {/* Legal Disclaimer */}
+      <div className="bg-yellow-950/20 border border-yellow-800 rounded-lg px-3 py-2 mb-2">
+        <p className="text-xs text-yellow-400 font-medium">⚠️ This blueprint is informational only for athletic training and nutrition planning. It does not diagnose, treat, or prevent any medical condition. Consult a healthcare provider or registered dietitian before making significant changes to diet, training, or supplementation.</p>
+      </div>
       <div className="flex items-center gap-2 mb-2">
         <BackButton to="/" />
         <h1 className="text-white text-xl font-black tracking-tight">Blueprint</h1>

@@ -96,6 +96,8 @@ export default function RecoveryPerformanceWidget() {
 
   return (
     <div className="bg-commander-surface border border-commander-border rounded-xl p-4 space-y-3">
+      {/* Legal Disclaimer */}
+      <p className="text-xs text-gray-500 font-medium">⚠️ This recovery-performance correlation is informational only. Data does not diagnose or treat medical conditions. Consult a healthcare provider with health concerns.</p>
       <div className="flex items-center justify-between">
         <p className="text-xs text-commander-muted uppercase tracking-widest">Recovery vs Performance — 7 Days</p>
         {alerts.length > 0 && (
