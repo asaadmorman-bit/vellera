@@ -1,0 +1,49 @@
+{
+  "name": "SquadMotivationLog",
+  "type": "object",
+  "properties": {
+    "squad_id": {
+      "type": "string",
+      "title": "Squad ID"
+    },
+    "member_email": {
+      "type": "string",
+      "title": "Member Email"
+    },
+    "message": {
+      "type": "string",
+      "title": "Motivation Message"
+    },
+    "sent_date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Sent Date"
+    }
+  },
+  "required": [
+    "squad_id",
+    "member_email",
+    "message"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.member_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {},
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

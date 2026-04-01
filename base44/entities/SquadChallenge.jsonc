@@ -1,0 +1,117 @@
+{
+  "name": "SquadChallenge",
+  "type": "object",
+  "properties": {
+    "squad_id": {
+      "type": "string",
+      "title": "Squad ID"
+    },
+    "challenge_name": {
+      "type": "string",
+      "title": "Challenge Name"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "metric_type": {
+      "type": "string",
+      "enum": [
+        "total_sessions",
+        "total_minutes",
+        "consecutive_days",
+        "total_volume_lifted",
+        "average_intensity"
+      ],
+      "title": "Metric to Track"
+    },
+    "target_value": {
+      "type": "number",
+      "title": "Target Value"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Start Date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "title": "End Date"
+    },
+    "prize_description": {
+      "type": "string",
+      "title": "Prize or Reward"
+    },
+    "is_active": {
+      "type": "boolean",
+      "title": "Active Challenge",
+      "default": true
+    }
+  },
+  "required": [
+    "squad_id",
+    "challenge_name",
+    "metric_type",
+    "start_date",
+    "end_date"
+  ],
+  "rls": {
+    "create": {
+      "data.squad_id": {
+        "$in": {
+          "collection": "SquadMembership",
+          "field": "data.squad_id",
+          "filter": {
+            "data.user_email": "{{user.email}}",
+            "data.role": "captain"
+          }
+        }
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.squad_id": {
+            "$in": {
+              "collection": "SquadMembership",
+              "field": "data.squad_id",
+              "filter": {
+                "data.user_email": "{{user.email}}"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "data.squad_id": {
+        "$in": {
+          "collection": "SquadMembership",
+          "field": "data.squad_id",
+          "filter": {
+            "data.user_email": "{{user.email}}",
+            "data.role": "captain"
+          }
+        }
+      }
+    },
+    "delete": {
+      "data.squad_id": {
+        "$in": {
+          "collection": "SquadMembership",
+          "field": "data.squad_id",
+          "filter": {
+            "data.user_email": "{{user.email}}",
+            "data.role": "captain"
+          }
+        }
+      }
+    }
+  }
+}
