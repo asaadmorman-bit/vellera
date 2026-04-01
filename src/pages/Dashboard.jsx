@@ -9,6 +9,7 @@ import RecoveryPerformanceWidget from "../components/RecoveryPerformanceWidget";
 import RecoveryCommandCenter from "../components/RecoveryCommandCenter";
 import WhoopConnect from "../components/WhoopConnect";
 import WeeklyTrainingTrends from "../components/WeeklyTrainingTrends";
+import PerformanceSummaryWidget from "../components/PerformanceSummaryWidget";
 import StrengthMetrics from "../components/StrengthMetrics";
 import BodybuildingMetrics from "../components/BodybuildingMetrics";
 import EnduranceMetrics from "../components/EnduranceMetrics";
@@ -256,6 +257,9 @@ export default function Dashboard() {
 
       {/* Weekly Training Trends */}
       <WeeklyTrainingTrends />
+
+      {/* Performance Summary PDF */}
+      <PerformanceSummaryWidget />
 
       {/* Adaptive Workout Dashboard — filtered by user track */}
       <AdaptiveWorkoutDashboard />
