@@ -56,10 +56,13 @@ Task: ${triggerDescriptions[context.trigger] || triggerDescriptions.halfway}
 
 Rules: Stay strictly in character. Be concise (max 2 sentences). Never mention you are an AI.`;
 
-    // ── LLM Call ──────────────────────────────────────────────────────────────
-    const motivationText = await base44.integrations.Core.InvokeLLM({
-      prompt: fullPrompt,
+    // ── LLM Call — route through unified coach service ─────────────────────────
+    const coachRes = await base44.asServiceRole.functions.invoke('generateCoachAudio', {
+      provider: 'openai',
+      agentPersona: agent.system_prompt,
+      workoutContext: fullPrompt,
     });
+    const motivationText = coachRes?.text || await base44.integrations.Core.InvokeLLM({ prompt: fullPrompt });
 
     // ── TTS Integration Point ─────────────────────────────────────────────────
     // To add real audio generation, integrate ElevenLabs or similar here:
