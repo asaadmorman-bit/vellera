@@ -49,8 +49,10 @@ export default function Settings() {
 
   const handleLogout = async () => {
     try {
-      await base44.auth.logout("/landing");
-      toast.success("Logged out successfully");
+      toast.success("Logging out...");
+      setTimeout(() => {
+        base44.auth.logout();
+      }, 500);
     } catch (err) {
       toast.error("Logout failed: " + err.message);
     }
@@ -164,6 +166,30 @@ export default function Settings() {
                   <p className="text-white">{editForm.onboarding_journey}</p>
                 </div>
               )}
+              {editForm.phone_number && (
+                <div>
+                  <p className="text-commander-muted text-xs mb-1">Phone</p>
+                  <p className="text-white">{editForm.phone_number}</p>
+                </div>
+              )}
+              {editForm.height_cm && (
+                <div>
+                  <p className="text-commander-muted text-xs mb-1">Height</p>
+                  <p className="text-white">{editForm.height_cm} cm</p>
+                </div>
+              )}
+              {editForm.weight_kg && (
+                <div>
+                  <p className="text-commander-muted text-xs mb-1">Weight</p>
+                  <p className="text-white">{editForm.weight_kg} kg</p>
+                </div>
+              )}
+              {editForm.age && (
+                <div>
+                  <p className="text-commander-muted text-xs mb-1">Age</p>
+                  <p className="text-white">{editForm.age} years</p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -197,6 +223,48 @@ export default function Settings() {
                   <option>Preparing for a season/fight</option>
                   <option>Active Duty / Professional</option>
                 </select>
+              </div>
+              <div>
+                <label className="text-xs text-commander-muted block mb-2">Phone Number</label>
+                <input
+                  type="tel"
+                  value={editForm.phone_number || ""}
+                  onChange={(e) => setEditForm({ ...editForm, phone_number: e.target.value })}
+                  placeholder="+1 (555) 000-0000"
+                  className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm min-h-[44px]"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-commander-muted block mb-2">Height (cm)</label>
+                  <input
+                    type="number"
+                    value={editForm.height_cm || ""}
+                    onChange={(e) => setEditForm({ ...editForm, height_cm: parseInt(e.target.value) || null })}
+                    placeholder="180"
+                    className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm min-h-[44px]"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-commander-muted block mb-2">Weight (kg)</label>
+                  <input
+                    type="number"
+                    value={editForm.weight_kg || ""}
+                    onChange={(e) => setEditForm({ ...editForm, weight_kg: parseInt(e.target.value) || null })}
+                    placeholder="85"
+                    className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm min-h-[44px]"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-commander-muted block mb-2">Age (years)</label>
+                <input
+                  type="number"
+                  value={editForm.age || ""}
+                  onChange={(e) => setEditForm({ ...editForm, age: parseInt(e.target.value) || null })}
+                  placeholder="43"
+                  className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm min-h-[44px]"
+                />
               </div>
               <div className="flex gap-2 pt-2">
                 <button
