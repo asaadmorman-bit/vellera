@@ -46,6 +46,8 @@ const TrainingCalendar = lazy(() => import('./pages/TrainingCalendar'));
 const MasteryMap = lazy(() => import('./pages/MasteryMap'));
 const PreWorkoutPrep = lazy(() => import('./pages/PreWorkoutPrep'));
 const SupplementLog = lazy(() => import('./pages/SupplementLog'));
+const InstructorDashboard = lazy(() => import('./pages/InstructorDashboard'));
+const StudentFeedbackCenter = lazy(() => import('./pages/StudentFeedbackCenter'));
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-commander-dark z-50">
@@ -119,6 +121,8 @@ const AuthenticatedApp = () => {
       <Route path="/mastery-map" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><MasteryMap /></Suspense></PageTransition>} />
       <Route path="/prep" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><PreWorkoutPrep /></Suspense></PageTransition>} />
       <Route path="/supplements" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><SupplementLog /></Suspense></PageTransition>} />
+      <Route path="/instructor" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><InstructorDashboard /></Suspense></PageTransition>} />
+      <Route path="/feedback" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><StudentFeedbackCenter /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>

@@ -1,0 +1,156 @@
+{
+  "name": "StudentFeedback",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string",
+      "title": "Student Profile ID"
+    },
+    "student_email": {
+      "type": "string",
+      "title": "Student Email"
+    },
+    "instructor_id": {
+      "type": "string",
+      "title": "Instructor ID"
+    },
+    "instructor_name": {
+      "type": "string",
+      "title": "Instructor Name"
+    },
+    "feedback_type": {
+      "type": "string",
+      "enum": [
+        "Technique Critique",
+        "Strength Assessment",
+        "Progress Update",
+        "Belt Recommendation",
+        "Program Adjustment",
+        "General Comment"
+      ],
+      "title": "Feedback Type"
+    },
+    "content": {
+      "type": "string",
+      "title": "Feedback Content"
+    },
+    "areas_of_strength": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Areas of Strength"
+    },
+    "areas_to_improve": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Areas to Improve"
+    },
+    "action_items": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Action Items for Student"
+    },
+    "rating": {
+      "type": "number",
+      "title": "Session/Progress Rating (1-5)",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "is_visible_to_student": {
+      "type": "boolean",
+      "title": "Visible to Student",
+      "default": true
+    }
+  },
+  "required": [
+    "student_id",
+    "instructor_id",
+    "feedback_type",
+    "content"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.instructor_id": {
+            "$in": {
+              "collection": "Instructor",
+              "field": "id",
+              "filter": {
+                "created_by": "{{user.email}}"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.student_email": "{{user.email}}"
+        },
+        {
+          "data.instructor_id": {
+            "$in": {
+              "collection": "Instructor",
+              "field": "id",
+              "filter": {
+                "created_by": "{{user.email}}"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.instructor_id": {
+            "$in": {
+              "collection": "Instructor",
+              "field": "id",
+              "filter": {
+                "created_by": "{{user.email}}"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.instructor_id": {
+            "$in": {
+              "collection": "Instructor",
+              "field": "id",
+              "filter": {
+                "created_by": "{{user.email}}"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

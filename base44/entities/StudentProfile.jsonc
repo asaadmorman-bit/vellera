@@ -1,0 +1,165 @@
+{
+  "name": "StudentProfile",
+  "type": "object",
+  "properties": {
+    "student_email": {
+      "type": "string",
+      "title": "Student Email"
+    },
+    "student_name": {
+      "type": "string",
+      "title": "Student Name"
+    },
+    "instructor_id": {
+      "type": "string",
+      "title": "Instructor ID"
+    },
+    "instructor_name": {
+      "type": "string",
+      "title": "Instructor Name"
+    },
+    "specialty": {
+      "type": "string",
+      "enum": [
+        "BJJ",
+        "MMA",
+        "Strength Coaching",
+        "Endurance Coaching",
+        "Tactical Training",
+        "Bodybuilding Coaching",
+        "General Fitness"
+      ],
+      "title": "Training Specialty"
+    },
+    "current_belt": {
+      "type": "string",
+      "enum": [
+        "White",
+        "Blue",
+        "Purple",
+        "Brown",
+        "Black",
+        "Beginner",
+        "Intermediate",
+        "Advanced",
+        "Elite"
+      ],
+      "title": "Current Belt / Rank",
+      "default": "White"
+    },
+    "belt_promotion_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Last Belt Promotion"
+    },
+    "fitness_path": {
+      "type": "string",
+      "enum": [
+        "bjj",
+        "strength",
+        "bodybuilding",
+        "endurance",
+        "tactical",
+        "whole_health"
+      ],
+      "title": "Primary Fitness Path"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Training Start Date"
+    },
+    "goals": {
+      "type": "string",
+      "title": "Training Goals / Notes"
+    },
+    "current_program_id": {
+      "type": "string",
+      "title": "Current Training Program ID"
+    },
+    "progress_summary": {
+      "type": "string",
+      "title": "Latest Progress Summary"
+    },
+    "last_checkin": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Check-in / Feedback Date"
+    }
+  },
+  "required": [
+    "student_email",
+    "instructor_id"
+  ],
+  "rls": {
+    "create": {
+      "data.student_email": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.student_email": "{{user.email}}"
+        },
+        {
+          "data.instructor_id": {
+            "$in": {
+              "collection": "Instructor",
+              "field": "id",
+              "filter": {
+                "created_by": "{{user.email}}"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.student_email": "{{user.email}}"
+        },
+        {
+          "data.instructor_id": {
+            "$in": {
+              "collection": "Instructor",
+              "field": "id",
+              "filter": {
+                "created_by": "{{user.email}}"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.instructor_id": {
+            "$in": {
+              "collection": "Instructor",
+              "field": "id",
+              "filter": {
+                "created_by": "{{user.email}}"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "name": "Instructor",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": "string",
+      "title": "Instructor Name"
+    },
+    "specialty": {
+      "type": "string",
+      "enum": [
+        "BJJ",
+        "MMA",
+        "Strength Coaching",
+        "Endurance Coaching",
+        "Tactical Training",
+        "Bodybuilding Coaching",
+        "General Fitness"
+      ],
+      "title": "Specialty"
+    },
+    "bio": {
+      "type": "string",
+      "title": "Bio / Credentials"
+    },
+    "profile_photo_url": {
+      "type": "string",
+      "title": "Profile Photo URL"
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Certifications"
+    },
+    "total_students": {
+      "type": "number",
+      "title": "Total Students",
+      "default": 0
+    },
+    "hourly_rate_usd": {
+      "type": "number",
+      "title": "Hourly Rate (USD)"
+    },
+    "is_available": {
+      "type": "boolean",
+      "title": "Available for New Students",
+      "default": true
+    }
+  },
+  "required": [
+    "display_name",
+    "specialty"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
