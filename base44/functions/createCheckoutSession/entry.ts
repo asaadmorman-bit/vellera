@@ -10,22 +10,24 @@ const PRICES = {
 
 Deno.serve(async (req) => {
   try {
-    let body = {};
+    console.log('Request method:', req.method);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
-    // Only parse JSON if there's a body
-    if (req.method === 'POST' && req.body) {
-      const contentType = req.headers.get('content-type');
-      if (contentType?.includes('application/json')) {
-        try {
-          body = await req.json();
-        } catch (e) {
-          console.error('JSON parse error:', e);
-          return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
-        }
+    let body = {};
+    try {
+      const text = await req.text();
+      console.log('Raw body:', text);
+      if (text) {
+        body = JSON.parse(text);
       }
+    } catch (e) {
+      console.error('Body parse error:', e);
+      return Response.json({ error: 'Failed to parse request body' }, { status: 400 });
     }
 
+    console.log('Parsed body:', body);
     const { priceId, planType } = body;
+    console.log('planType:', planType, 'priceId:', priceId);
 
     if (!priceId && !planType) {
       return Response.json({ error: 'Missing priceId or planType' }, { status: 400 });
