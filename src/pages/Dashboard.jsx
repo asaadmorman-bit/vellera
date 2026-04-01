@@ -63,10 +63,16 @@ export default function Dashboard() {
         base44.entities.UserProfile.filter({ created_by: u.email }).then(profiles => {
           setUserProfile(profiles[0] || null);
         });
-        // Award achievements on login
-        base44.functions.invoke('awardAchievements', {});
-      }
-    });
+        // Award achievements on login (only run once per session)
+        const sessionKey = 'achievementsRun';
+        if (!sessionStorage.getItem(sessionKey)) {
+          sessionStorage.setItem(sessionKey, 'true');
+          base44.functions.invoke('awardAchievements', {}).catch(err => {
+            console.warn('Award achievements failed (rate limited):', err.message);
+          });
+        }
+        }
+        });
 
     base44.analytics.track({
       eventName: "daily_login",
