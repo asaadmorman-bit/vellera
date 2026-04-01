@@ -3,10 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import SafetyValve from "../components/SafetyValve";
-import TrainingIntensityRecommendation from "../components/TrainingIntensityRecommendation";
 import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { useTabStack } from "../hooks/useTabStack";
 import RecoveryPerformanceWidget from "../components/RecoveryPerformanceWidget";
+import RecoveryCommandCenter from "../components/RecoveryCommandCenter";
 import WhoopConnect from "../components/WhoopConnect";
 import StreaksWidget from "../components/StreaksWidget";
 import DailyFocus from "../components/DailyFocus";
@@ -160,6 +160,11 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Recovery Command Center — auto-syncs wearable data + color-codes intensity */}
+      <div className="bg-commander-surface border border-commander-border rounded-xl p-4">
+        <RecoveryCommandCenter />
+      </div>
+
       {/* Readiness Check-In */}
       <ReadinessCheckIn />
 
@@ -180,30 +185,6 @@ export default function Dashboard() {
 
       {/* Safety Valve */}
       <SafetyValve log={todayLog} weekLogs={weekLogs} />
-
-      {/* Today's Biometrics */}
-      {todayLog && (
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { icon: Heart, label: "Recovery", val: `${todayLog.recovery_pct}%`, color: todayLog.recovery_pct > 75 ? "text-green-400" : todayLog.recovery_pct < 45 ? "text-red-400" : "text-yellow-400" },
-            { icon: Zap, label: "Body Batt", val: `${todayLog.body_battery ?? "—"}`, color: "text-blue-400" },
-            { icon: Moon, label: "Sleep", val: `${todayLog.sleep_performance ?? "—"}%`, color: "text-purple-400" },
-          ].map(({ icon: Icon, label, val, color }) => (
-            <div key={label} className="bg-commander-surface border border-commander-border rounded-xl p-3 text-center">
-              <Icon className={`w-4 h-4 mx-auto mb-1 ${color}`} />
-              <p className={`font-bold text-lg ${color}`}>{val}</p>
-              <p className="text-commander-muted text-xs">{label}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Training Intensity Recommendation */}
-      <TrainingIntensityRecommendation
-        recovery={todayLog?.recovery_pct}
-        sleep={todayLog?.sleep_performance}
-        hrv={todayLog?.hrv}
-      />
 
       {/* Today's Schedule */}
       {todayClasses.length > 0 && (
@@ -237,21 +218,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Whoop Connect + Fitbit Sync Button */}
+      {/* Whoop Connect */}
       <WhoopConnect />
-      <button
-        onClick={async () => {
-          try {
-            await base44.functions.invoke("fitbitSync", {});
-            await queryClient.refetchQueries({ queryKey: ["biometrics", "today"] });
-          } catch (e) {
-            console.error(e);
-          }
-        }}
-        className="w-full bg-blue-900/40 border border-blue-800 text-blue-300 text-xs font-bold px-4 py-3 rounded-xl hover:bg-blue-900 transition-all min-h-[44px]"
-      >
-        🏃 Sync Fitbit
-      </button>
 
       {/* Recovery vs Performance Widget */}
       <RecoveryPerformanceWidget />
