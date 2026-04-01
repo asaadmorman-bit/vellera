@@ -209,53 +209,43 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto">
           <h2 className="text-4xl font-black mb-12 text-center">Meet the Creators.</h2>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Asaad Card */}
-            <div className="bg-commander-surface border border-commander-border rounded-2xl p-8 space-y-6">
-              <div className="w-40 h-40 mx-auto rounded-full border-4 border-commander-border overflow-hidden shadow-lg">
-                <img
-                  src="https://media.base44.com/images/public/69c722c665db36b41f55ba9c/f8c8b63ac_Gemini_Generated_Image_l5e1fyl5e1fyl5e1.png"
-                  alt="Asaad Morman"
-                  className="w-full h-full object-cover object-top"
-                />
-              </div>
-
-              <div className="text-center">
-                <h3 className="text-2xl font-black">Asaad Morman</h3>
-                <p className="text-vellera-blue font-bold text-xs uppercase tracking-widest mt-1">Founder & Creator</p>
-              </div>
-
-              <p className="text-gray-300 leading-relaxed text-sm">
-                Military veteran, martial artist, and tactical defense specialist. Asaad brings decades of experience in firearms training, self-defense, and executive protection to every aspect of Vellera's design. His mission: make elite-level training accessible to everyone.
-              </p>
-
-              <a href="https://cyberdojosensai.org" target="_blank" rel="noopener noreferrer" className="block text-vellera-blue font-bold text-sm hover:text-vellera-green transition">
-                cyberdojosensai.org →
-              </a>
+          <div className="bg-commander-surface border border-commander-border rounded-2xl overflow-hidden">
+            {/* Combined Photo */}
+            <div className="h-96 md:h-[500px] overflow-hidden">
+              <img
+                src="https://media.base44.com/images/public/69c722c665db36b41f55ba9c/69137a96a_Gemini_Generated_Image_y5i1n5y5i1n5y5i1.png"
+                alt="Asaad & Shauntze Morman"
+                className="w-full h-full object-cover"
+              />
             </div>
 
-            {/* Shauntze Card */}
-            <div className="bg-commander-surface border border-commander-border rounded-2xl p-8 space-y-6">
-              <div className="w-40 h-40 mx-auto rounded-full border-4 border-commander-border overflow-hidden shadow-lg">
-                <img
-                  src="https://media.base44.com/images/public/69c722c665db36b41f55ba9c/default_creator.jpg"
-                  alt="Shauntze Morman"
-                  className="w-full h-full object-cover object-center bg-gradient-to-br from-vellera-blue/20 to-vellera-green/20"
-                />
+            {/* Bios */}
+            <div className="grid md:grid-cols-2 gap-8 p-8">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-2xl font-black text-vellera-blue">Asaad Morman</h3>
+                  <p className="text-white font-bold text-xs uppercase tracking-widest mt-1">Founder & Creator</p>
+                </div>
+                <p className="text-gray-300 leading-relaxed text-sm">
+                  Military veteran, martial artist, and tactical defense specialist. Asaad brings decades of experience in firearms training, self-defense, and executive protection to every aspect of Vellera's design. His mission: make elite-level training accessible to everyone.
+                </p>
+                <a href="https://cyberdojosensai.org" target="_blank" rel="noopener noreferrer" className="inline-block text-vellera-blue font-bold text-sm hover:text-vellera-green transition">
+                  cyberdojosensai.org →
+                </a>
               </div>
 
-              <div className="text-center">
-                <h3 className="text-2xl font-black">Shauntze Morman</h3>
-                <p className="text-vellera-green font-bold text-xs uppercase tracking-widest mt-1">Co-Founder</p>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-2xl font-black text-vellera-green">Shauntze Morman</h3>
+                  <p className="text-white font-bold text-xs uppercase tracking-widest mt-1">Co-Founder</p>
+                </div>
+                <p className="text-gray-300 leading-relaxed text-sm">
+                  Public service professional with extensive background as an EMT, firefighter, dispatcher, and firearms instructor. Shauntze brings real-world emergency response expertise and a deep understanding of functional fitness that keeps people ready for anything—on and off the mat.
+                </p>
+                <a href="https://shauntzemorman.info" target="_blank" rel="noopener noreferrer" className="inline-block text-vellera-green font-bold text-sm hover:text-vellera-blue transition">
+                  shauntzemorman.info →
+                </a>
               </div>
-
-              <p className="text-gray-300 leading-relaxed text-sm">
-                Public service professional with extensive background as an EMT, firefighter, dispatcher, and firearms instructor. Shauntze brings real-world emergency response expertise and a deep understanding of functional fitness that keeps people ready for anything—on and off the mat.
-              </p>
-
-              <a href="https://shauntzemorman.info" target="_blank" rel="noopener noreferrer" className="block text-vellera-green font-bold text-sm hover:text-vellera-blue transition">
-                shauntzemorman.info →
-              </a>
             </div>
           </div>
         </div>
