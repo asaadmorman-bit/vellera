@@ -49,6 +49,7 @@ const SupplementLog = lazy(() => import('./pages/SupplementLog'));
 const InstructorDashboard = lazy(() => import('./pages/InstructorDashboard'));
 const StudentProgressTracking = lazy(() => import('./pages/StudentProgressTracking'));
 const StudentFeedbackCenter = lazy(() => import('./pages/StudentFeedbackCenter'));
+const CommunityChallenge = lazy(() => import('./pages/CommunityChallenge'));
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-commander-dark z-50">
@@ -125,6 +126,7 @@ const AuthenticatedApp = () => {
       <Route path="/instructor" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><InstructorDashboard /></Suspense></PageTransition>} />
       <Route path="/student-progress" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><StudentProgressTracking /></Suspense></PageTransition>} />
       <Route path="/feedback" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><StudentFeedbackCenter /></Suspense></PageTransition>} />
+      <Route path="/challenges" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><CommunityChallenge /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
