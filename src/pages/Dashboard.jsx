@@ -191,30 +191,30 @@ export default function Dashboard() {
       </div>
 
       {/* Recovery Command Center — auto-syncs wearable data + color-codes intensity */}
-      <div className="bg-commander-surface border border-commander-border rounded-xl p-4">
+      {/* <div className="bg-commander-surface border border-commander-border rounded-xl p-4">
         <RecoveryCommandCenter />
-      </div>
+      </div> */}
 
       {/* Readiness Check-In */}
-      <ReadinessCheckIn />
+      {/* <ReadinessCheckIn /> */}
 
       {/* Adaptive Home — personalized track greeting + featured routines */}
-      <AdaptiveHome />
+      {/* <AdaptiveHome /> */}
 
       {/* Daily Mat Priority — AI-generated morning brief */}
-      <DailyMatPriority />
+      {/* <DailyMatPriority /> */}
 
       {/* Achievements */}
-      <AchievementsWidget />
+      {/* <AchievementsWidget /> */}
 
       {/* Streaks */}
-      <StreaksWidget />
+      {/* <StreaksWidget /> */}
 
       {/* Weight Tracker */}
-      <WeightTracker />
+      {/* <WeightTracker /> */}
 
       {/* Daily Focus */}
-      <DailyFocus />
+      {/* <DailyFocus /> */}
 
       {/* Path-Specific Metrics */}
       {userProfile?.fitness_path === "strength" && <StrengthMetrics />}
@@ -257,19 +257,19 @@ export default function Dashboard() {
       </div>
 
       {/* Whoop Connect */}
-      <WhoopConnect />
+      {/* <WhoopConnect /> */}
 
       {/* Recovery vs Performance Widget */}
-      <RecoveryPerformanceWidget />
+      {/* <RecoveryPerformanceWidget /> */}
 
       {/* Weekly Training Trends */}
-      <WeeklyTrainingTrends />
+      {/* <WeeklyTrainingTrends /> */}
 
       {/* Performance Summary PDF */}
-      <PerformanceSummaryWidget />
+      {/* <PerformanceSummaryWidget /> */}
 
       {/* Adaptive Workout Dashboard — filtered by user track */}
-      <AdaptiveWorkoutDashboard />
+      {/* <AdaptiveWorkoutDashboard /> */}
 
       {/* Quick Links */}
       <div className="grid grid-cols-2 gap-2">
