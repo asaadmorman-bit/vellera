@@ -80,6 +80,9 @@
       "type": "string",
       "enum": [
         "General Fitness & Health",
+        "Strength & Power",
+        "Bodybuilding & Hypertrophy",
+        "Endurance & Conditioning",
         "Tactical & First Responder Readiness",
         "Combat Sports & Competition",
         "Rehab, Mobility & Whole Health"
@@ -106,13 +109,28 @@
       ],
       "title": "Equipment & Limitations"
     },
+    "fitness_path": {
+      "type": "string",
+      "enum": [
+        "bjj",
+        "strength",
+        "bodybuilding",
+        "endurance",
+        "tactical",
+        "whole_health"
+      ],
+      "title": "Primary Fitness Path"
+    },
     "vellera_track": {
       "type": "string",
       "enum": [
         "whole_health",
         "tactical",
         "competitor",
-        "momentum"
+        "momentum",
+        "strength",
+        "bodybuilding",
+        "endurance"
       ],
       "title": "Vellera Track"
     }

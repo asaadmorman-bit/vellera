@@ -32,6 +32,72 @@ export const TRACKS = {
     focus_tags: ["Mobility", "Zone 2 Cardio", "Mental Resilience", "Low Impact"],
     intensity_cap: "LOW",
   },
+  strength: {
+    id: "strength",
+    label: "Strength & Power Track",
+    tagline: "Lift Heavy. Move Earth.",
+    color: "#dc2626",
+    accent: "red",
+    greeting: (name) => `Time to move weight${name ? `, ${name}` : ""}. Let's build max strength.`,
+    featured_routine: {
+      title: "The Grind: 5x5 Powerlifting Compound",
+      subtitle: "60 min · Squat, bench, deadlift · Progressive overload",
+      icon: "🏋️",
+      path: "/hub",
+    },
+    alt_routine: {
+      title: "Strongman Carries & Loaded Movement",
+      subtitle: "45 min · Functional strength · Core stability",
+      icon: "⚙️",
+      path: "/training",
+    },
+    focus_tags: ["Max Strength", "Compound Lifts", "Progressive Overload", "Powerlifting"],
+    intensity_cap: "HIGH",
+  },
+  bodybuilding: {
+    id: "bodybuilding",
+    label: "Bodybuilding & Hypertrophy Track",
+    tagline: "Build the Physique.",
+    color: "#f59e0b",
+    accent: "amber",
+    greeting: (name) => `Pump day${name ? `, ${name}` : ""}. Time to build muscle and volume.`,
+    featured_routine: {
+      title: "Upper Power: Hypertrophy Focus",
+      subtitle: "50 min · Chest, back, shoulders · 8-12 rep range",
+      icon: "💪",
+      path: "/hub",
+    },
+    alt_routine: {
+      title: "Lower Isolation: Quad & Hamstring Pump",
+      subtitle: "45 min · Leg day · High volume metabolite stress",
+      icon: "🦵",
+      path: "/training",
+    },
+    focus_tags: ["Hypertrophy", "Muscle Pump", "Isolation Work", "Body Composition"],
+    intensity_cap: "MODERATE-HIGH",
+  },
+  endurance: {
+    id: "endurance",
+    label: "Endurance & Conditioning Track",
+    tagline: "Go the Distance.",
+    color: "#06b6d4",
+    accent: "cyan",
+    greeting: (name) => `Time to run${name ? `, ${name}` : ""}. Build aerobic capacity.`,
+    featured_routine: {
+      title: "Tempo Run: Sustained Effort",
+      subtitle: "45 min · Zone 3 · Lactate threshold work",
+      icon: "🏃",
+      path: "/hub",
+    },
+    alt_routine: {
+      title: "Long-Slow Distance: Aerobic Base",
+      subtitle: "90 min · Zone 1-2 · Endurance foundation",
+      icon: "🚴",
+      path: "/training",
+    },
+    focus_tags: ["VO2 Max", "Aerobic Base", "Long Distance", "Work Capacity"],
+    intensity_cap: "MODERATE",
+  },
   tactical: {
     id: "tactical",
     label: "Tactical Track",
@@ -110,6 +176,9 @@ export const TRACKS = {
 export function assignTrack(goal, journey, equipment) {
   // Explicit mappings
   if (goal === "Rehab, Mobility & Whole Health") return "whole_health";
+  if (goal === "Strength & Power") return "strength";
+  if (goal === "Bodybuilding & Hypertrophy") return "bodybuilding";
+  if (goal === "Endurance & Conditioning") return "endurance";
   if (goal === "Tactical & First Responder Readiness") return "tactical";
   if (goal === "Combat Sports & Competition") return "competitor";
 

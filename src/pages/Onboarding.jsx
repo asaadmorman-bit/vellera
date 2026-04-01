@@ -13,6 +13,9 @@ const STEPS = [
     subtitle: "We'll build your personalized track around this.",
     options: [
       { value: "General Fitness & Health", icon: "💪", desc: "Get fit, feel great, build habits" },
+      { value: "Strength & Power", icon: "🏋️", desc: "Powerlifting, strongman, max strength" },
+      { value: "Bodybuilding & Hypertrophy", icon: "💪", desc: "Muscle building, aesthetics, physique" },
+      { value: "Endurance & Conditioning", icon: "🏃", desc: "Running, cycling, long-distance athletics" },
       { value: "Tactical & First Responder Readiness", icon: "🛡️", desc: "Military, LEO, EMS — stay mission-ready" },
       { value: "Combat Sports & Competition", icon: "🥊", desc: "BJJ, MMA, boxing — fight-camp focus" },
       { value: "Rehab, Mobility & Whole Health", icon: "🧘", desc: "Recovery, MOVE!, VA Whole Health" },
