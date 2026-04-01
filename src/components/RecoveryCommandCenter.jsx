@@ -159,6 +159,8 @@ export default function RecoveryCommandCenter() {
 
   return (
     <div className="space-y-3">
+      {/* Legal Disclaimer */}
+      <p className="text-xs text-gray-500 font-medium">⚠️ This data is for information only. Recovery scores do not diagnose or treat medical conditions. Consult a healthcare provider if you have health concerns.</p>
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div>

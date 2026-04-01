@@ -125,6 +125,7 @@ function WeeklyAdjustmentEngine({ weekLogs, athlete }) {
         <AlertTriangle className="w-4 h-4 text-yellow-400" />
         <p className="text-yellow-300 font-bold text-xs uppercase tracking-wider">Nutrition Adjustment Recommended</p>
       </div>
+      <p className="text-yellow-400 text-xs mb-2 italic">These are AI suggestions only, not medical advice. Consult a registered dietitian before making dietary changes.</p>
       <p className="text-yellow-400 text-xs mb-3">Based on your last {weekLogs.length} logged meals, your weekly averages suggest adjustments:</p>
       <div className="space-y-2">
         {suggestions.map((s, i) => (
@@ -240,6 +241,10 @@ Return JSON with: food_description (string, describe what you see), calories (nu
 
   return (
     <div className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top overflow-auto h-screen">
+      {/* Legal Disclaimer */}
+      <div className="bg-yellow-950/20 border border-yellow-800 rounded-lg px-3 py-2 mb-2">
+        <p className="text-xs text-yellow-400 font-medium">⚠️ This food log is informational only. AI estimates are approximate and do not diagnose, treat, or prevent any medical or nutritional condition. Consult a registered dietitian for personalized nutrition advice.</p>
+      </div>
       <div className="flex items-center gap-2 mb-2">
         <BackButton to="/" />
         <h1 className="text-white text-xl font-black tracking-tight">Food Log</h1>

@@ -74,6 +74,8 @@ export default function TrainingIntensityRecommendation({ recovery = null, sleep
 
   return (
     <div className={`border rounded-xl p-4 ${recommendation.color}`}>
+      {/* Legal Disclaimer */}
+      <p className="text-xs text-gray-500 mb-2 font-medium">⚠️ This is informational only and does not treat, diagnose, or prevent any medical condition. Consult a healthcare provider before changing your training regimen.</p>
       <div className="flex items-start gap-3 mb-2">
         <Icon className={`w-5 h-5 ${recommendation.iconColor} flex-shrink-0 mt-0.5`} />
         <div className="flex-1">
