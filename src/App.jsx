@@ -58,6 +58,8 @@ const CommunityChallenge = lazy(() => import('./pages/CommunityChallenge'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const PersonalizedTrainingDashboard = lazy(() => import('./pages/PersonalizedTrainingDashboard'));
 const BiometricsDashboard = lazy(() => import('./pages/BiometricsDashboard'));
+const CoachHub = lazy(() => import('./pages/CoachHub'));
+const MyCoaches = lazy(() => import('./pages/MyCoaches'));
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-commander-dark z-50">
@@ -151,6 +153,8 @@ const AuthenticatedApp = () => {
       <Route path="/setup" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ProfileSetup /></Suspense></PageTransition>} />
       <Route path="/training-dashboard" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><PersonalizedTrainingDashboard /></Suspense></PageTransition>} />
       <Route path="/biometrics" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><BiometricsDashboard /></Suspense></PageTransition>} />
+      <Route path="/coach-hub" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><CoachHub /></Suspense></PageTransition>} />
+      <Route path="/my-coaches" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><MyCoaches /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
