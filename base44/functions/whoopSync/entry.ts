@@ -35,9 +35,17 @@ async function getValidToken(tokenRecord, base44) {
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
-  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  // Allow webhook calls without auth, but require email parameter; require auth for direct calls
+  let userEmail = user?.email;
+  if (!userEmail) {
+    const body = await req.json().catch(() => ({}));
+    userEmail = body.user_email;
+    if (!userEmail) {
+      return Response.json({ error: "Unauthorized or missing user_email" }, { status: 401 });
+    }
+  }
 
-  const tokens = await base44.asServiceRole.entities.WhoopToken.filter({ user_email: user.email });
+  const tokens = await base44.asServiceRole.entities.WhoopToken.filter({ user_email: userEmail });
   if (!tokens.length) return Response.json({ error: "Whoop not connected" }, { status: 400 });
 
   let tokenRecord = await getValidToken(tokens[0], base44);
@@ -73,8 +81,8 @@ Deno.serve(async (req) => {
     const sleepPerf = sleep?.score?.sleep_performance_percentage ?? null;
     const sleepHours = sleep ? ((sleep.score?.total_sleep_time_milli || 0) / 3600000) : null;
 
-    // Check if we already have a log for this date
-    const existing = await base44.asServiceRole.entities.BiometricLog.filter({ date });
+    // Check if we already have a log for this date (scoped to current user)
+    const existing = await base44.asServiceRole.entities.BiometricLog.filter({ date, created_by: userEmail });
 
     const payload = {
       date,
@@ -90,7 +98,8 @@ Deno.serve(async (req) => {
     if (existing.length > 0) {
       await base44.asServiceRole.entities.BiometricLog.update(existing[0].id, payload);
     } else {
-      await base44.asServiceRole.entities.BiometricLog.create(payload);
+      // Ensure created_by is set to prevent orphaned records
+      await base44.asServiceRole.entities.BiometricLog.create({ ...payload, created_by: userEmail });
     }
     synced.push(date);
   }
