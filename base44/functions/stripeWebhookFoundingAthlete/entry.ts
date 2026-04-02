@@ -126,7 +126,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 7. Log success
+    // 7. Send welcome email
+    try {
+      await base44.integrations.Core.SendEmail({
+        to: userEmail,
+        from_name: "Vellera",
+        subject: "Welcome to Vellera, Founding Athlete! 🏆",
+        body: `Welcome to the Vellera community!\n\nYou've secured Founding Athlete status—one of only 1,000 lifetime access memberships. This is your edge.\n\nSpot #${updatedConfig.founding_athlete_count} of ${FOUNDING_ATHLETE_CAP}\n\nWhat's next:\n• Log in to unlock your personalized training dashboard\n• Connect your wearables (Whoop, Strava, Polar, Fitbit, Google Fit)\n• Start tracking your momentum and compete with the squad\n\nQuestions? Reply to this email.\n\nLet's go.\n—Vellera Team`,
+      });
+    } catch (emailErr) {
+      console.warn(`[Email Warning] Failed to send welcome email to ${userEmail}:`, emailErr.message);
+    }
+
+    // 8. Log success
     console.log(`[Founding Athlete] User ${userEmail} purchased spot #${updatedConfig.founding_athlete_count}/${FOUNDING_ATHLETE_CAP}`);
 
     return Response.json({
