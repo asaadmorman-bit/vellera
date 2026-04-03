@@ -65,6 +65,7 @@ const ZuluWarrior = lazy(() => import('./pages/ZuluWarrior'));
 const ZuluShred = lazy(() => import('./pages/ZuluShred'));
 const ZuluWarriorv4 = lazy(() => import('./pages/ZuluWarriorv4'));
 const ZuluMasterProtocol = lazy(() => import('./pages/ZuluMasterProtocol'));
+const BJJTacticalJournal = lazy(() => import('./pages/BJJTacticalJournal'));
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-commander-dark z-50">
@@ -165,6 +166,7 @@ const AuthenticatedApp = () => {
       <Route path="/shred" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ZuluShred /></Suspense></PageTransition>} />
       <Route path="/zulu-v4" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ZuluWarriorv4 /></Suspense></PageTransition>} />
       <Route path="/master-protocol" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ZuluMasterProtocol /></Suspense></PageTransition>} />
+      <Route path="/bjj-journal" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><BJJTacticalJournal /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
