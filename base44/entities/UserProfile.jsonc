@@ -158,6 +158,79 @@
     "weight_kg": {
       "type": "number",
       "title": "Current Weight (kg)"
+    },
+    "zulu_v5_1_enabled": {
+      "type": "boolean",
+      "title": "Zulu Warrior v5.1 Master Protocol Active",
+      "default": false
+    },
+    "zulu_start_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Protocol Start Date"
+    },
+    "zulu_target_weight_lbs": {
+      "type": "number",
+      "title": "Zulu Target Weight (lbs)"
+    },
+    "zulu_current_weight_lbs": {
+      "type": "number",
+      "title": "Current Weight (lbs) for Zulu"
+    },
+    "whoop_integration_active": {
+      "type": "boolean",
+      "title": "Whoop 5.0 Integration Active",
+      "default": false
+    },
+    "daily_trigger_time": {
+      "type": "string",
+      "title": "Daily Trigger Time (HH:MM)",
+      "default": "17:00"
+    },
+    "warrior_credo_notifications": {
+      "type": "boolean",
+      "title": "Warrior Credo Notifications Enabled",
+      "default": true
+    },
+    "coach_name": {
+      "type": "string",
+      "title": "Coach Name",
+      "default": "Colin Eaton"
+    },
+    "daily_protein_target_g": {
+      "type": "number",
+      "title": "Daily Protein Target (g)",
+      "default": 260
+    },
+    "carb_timing_pre_pm_g": {
+      "type": "number",
+      "title": "Pre-PM Carbs (g)",
+      "default": 50
+    },
+    "pm_session_time": {
+      "type": "string",
+      "title": "PM Combat Session Time (HH:MM)",
+      "default": "18:00"
+    },
+    "am_lab_days": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "MON",
+          "TUE",
+          "WED",
+          "THU",
+          "FRI",
+          "SAT"
+        ]
+      },
+      "title": "Lab Days with Coach",
+      "default": [
+        "MON",
+        "TUE",
+        "THU"
+      ]
     }
   },
   "required": [],
