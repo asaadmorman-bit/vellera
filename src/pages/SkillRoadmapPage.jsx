@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Plus, ChevronDown, ChevronRight, RefreshCw, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// Default BJJ syllabus seeded on first load
+// Default BJJ + MMA syllabus seeded on first load
 const DEFAULT_SYLLABUS = [
   // Guard Retention
   { technique_name: "Hip Escape (Shrimp)", category: "Guard Retention", belt_level: "White" },
@@ -39,6 +39,55 @@ const DEFAULT_SYLLABUS = [
   { technique_name: "Posture in Guard", category: "Defense", belt_level: "White" },
   { technique_name: "Armbar Defense", category: "Defense", belt_level: "Blue" },
   { technique_name: "Triangle Defense", category: "Defense", belt_level: "Blue" },
+  // --- MMA: Striking ---
+  { technique_name: "Jab", category: "Striking", belt_level: "White" },
+  { technique_name: "Cross", category: "Striking", belt_level: "White" },
+  { technique_name: "Lead Hook", category: "Striking", belt_level: "White" },
+  { technique_name: "Rear Hook", category: "Striking", belt_level: "White" },
+  { technique_name: "Jab-Cross Combo", category: "Striking", belt_level: "White" },
+  { technique_name: "Jab-Cross-Hook", category: "Striking", belt_level: "Blue" },
+  { technique_name: "Uppercut (Lead & Rear)", category: "Striking", belt_level: "Blue" },
+  { technique_name: "Overhand Right", category: "Striking", belt_level: "Blue" },
+  { technique_name: "Elbow Strikes (Horizontal & Diagonal)", category: "Striking", belt_level: "Purple" },
+  { technique_name: "Counter Striking (Parry & Punish)", category: "Striking", belt_level: "Purple" },
+  // --- MMA: Kicks ---
+  { technique_name: "Teep (Front Push Kick)", category: "Kicks", belt_level: "White" },
+  { technique_name: "Low Kick (Leg Kick)", category: "Kicks", belt_level: "White" },
+  { technique_name: "Roundhouse Kick (Body)", category: "Kicks", belt_level: "Blue" },
+  { technique_name: "Roundhouse Kick (Head)", category: "Kicks", belt_level: "Purple" },
+  { technique_name: "Switch Kick", category: "Kicks", belt_level: "Blue" },
+  { technique_name: "Spinning Back Kick", category: "Kicks", belt_level: "Purple" },
+  { technique_name: "Knee Strike (Thai Plum)", category: "Kicks", belt_level: "Blue" },
+  // --- MMA: Takedowns ---
+  { technique_name: "Double Leg Takedown", category: "Takedowns", belt_level: "White" },
+  { technique_name: "Single Leg Takedown", category: "Takedowns", belt_level: "White" },
+  { technique_name: "High Crotch to Single Leg", category: "Takedowns", belt_level: "Blue" },
+  { technique_name: "Level Change & Penetration Step", category: "Takedowns", belt_level: "White" },
+  { technique_name: "Blast Double", category: "Takedowns", belt_level: "Blue" },
+  { technique_name: "Arm Drag to Back", category: "Takedowns", belt_level: "Blue" },
+  { technique_name: "Takedown Defense (Sprawl)", category: "Takedowns", belt_level: "White" },
+  { technique_name: "Snap Down to Front Headlock", category: "Takedowns", belt_level: "Purple" },
+  // --- MMA: Clinch Work ---
+  { technique_name: "Clinch Entry (Tie-Up)", category: "Clinch Work", belt_level: "White" },
+  { technique_name: "Dirty Boxing (Frames + Short Punches)", category: "Clinch Work", belt_level: "Blue" },
+  { technique_name: "Thai Plum (Double Collar Tie)", category: "Clinch Work", belt_level: "Blue" },
+  { technique_name: "Clinch to Takedown Transition", category: "Clinch Work", belt_level: "Blue" },
+  { technique_name: "Clinch Knees", category: "Clinch Work", belt_level: "Blue" },
+  { technique_name: "Underhook Control & Elevation", category: "Clinch Work", belt_level: "Purple" },
+  { technique_name: "Clinch Cage Work (Fence Pressure)", category: "Clinch Work", belt_level: "Purple" },
+  // --- MMA: Ground & Pound ---
+  { technique_name: "Punches from Mount", category: "Ground & Pound", belt_level: "White" },
+  { technique_name: "Elbows from Side Control", category: "Ground & Pound", belt_level: "Blue" },
+  { technique_name: "Ground & Pound from Half Guard Pass", category: "Ground & Pound", belt_level: "Blue" },
+  { technique_name: "Pound to Submission Setup", category: "Ground & Pound", belt_level: "Purple" },
+  { technique_name: "G&P Defense from Bottom (Frames + Hips)", category: "Ground & Pound", belt_level: "Blue" },
+  // --- Wrestling ---
+  { technique_name: "Stance & Level Change", category: "Wrestling", belt_level: "White" },
+  { technique_name: "Circle & Angle Off", category: "Wrestling", belt_level: "White" },
+  { technique_name: "Sit-Out (Turtle Escape)", category: "Wrestling", belt_level: "Blue" },
+  { technique_name: "Switch (Escape from Rear)", category: "Wrestling", belt_level: "Blue" },
+  { technique_name: "Mat Returns (Trip + Dump)", category: "Wrestling", belt_level: "Purple" },
+  { technique_name: "Chest-to-Chest Control (Ride)", category: "Wrestling", belt_level: "Blue" },
 ];
 
 const STATUS_CONFIG = {
@@ -59,6 +108,12 @@ const CATEGORY_ICONS = {
   "Positional Control": "⚔️",
   "Footwork": "👣",
   "Defense": "🧱",
+  "Striking": "👊",
+  "Kicks": "🦵",
+  "Takedowns": "🤼",
+  "Clinch Work": "🥋",
+  "Ground & Pound": "💥",
+  "Wrestling": "🏋️",
 };
 
 const BELT_COLORS = {
@@ -371,7 +426,7 @@ export default function SkillRoadmapPage() {
           <div className="grid grid-cols-2 gap-2">
             <select value={newTech.category} onChange={e => setNewTech(f => ({ ...f, category: e.target.value }))}
               className="bg-gray-900 border border-commander-border rounded-lg px-3 py-2 text-white text-sm">
-              {["Guard Retention","Sweeps","Submissions","Escapes","Positional Control","Footwork","Defense"].map(c => <option key={c}>{c}</option>)}
+              {["Guard Retention","Sweeps","Submissions","Escapes","Positional Control","Footwork","Defense","Striking","Kicks","Takedowns","Clinch Work","Ground & Pound","Wrestling"].map(c => <option key={c}>{c}</option>)}
             </select>
             <select value={newTech.belt_level} onChange={e => setNewTech(f => ({ ...f, belt_level: e.target.value }))}
               className="bg-gray-900 border border-commander-border rounded-lg px-3 py-2 text-white text-sm">
