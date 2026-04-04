@@ -1,0 +1,155 @@
+{
+  "name": "Activity_Logs",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string",
+      "title": "Student Email",
+      "description": "Student performing the activity"
+    },
+    "org_id": {
+      "type": "string",
+      "title": "Organization ID",
+      "description": "Which org/dojo the student belongs to"
+    },
+    "coach_id": {
+      "type": "string",
+      "title": "Coach Email",
+      "description": "Coach who assigned or reviewed"
+    },
+    "activity_type": {
+      "type": "string",
+      "enum": [
+        "drill_submission",
+        "video_upload",
+        "form_feedback",
+        "technique_practice",
+        "sparring",
+        "strength_session"
+      ],
+      "title": "Activity Type"
+    },
+    "title": {
+      "type": "string",
+      "title": "Activity Title"
+    },
+    "video_url": {
+      "type": "string",
+      "title": "Video URL"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "reviewed",
+        "approved",
+        "needs_revision"
+      ],
+      "title": "Review Status",
+      "default": "submitted"
+    },
+    "coach_feedback": {
+      "type": "string",
+      "title": "Coach Feedback / Notes"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Activity Timestamp"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "title": "Duration (minutes)"
+    },
+    "performance_score": {
+      "type": "number",
+      "title": "Performance Score (0-100)",
+      "minimum": 0,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "student_id",
+    "org_id",
+    "activity_type",
+    "timestamp"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.student_id": "{{user.email}}"
+        },
+        {
+          "data.coach_id": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.student_id": "{{user.email}}"
+        },
+        {
+          "data.coach_id": "{{user.email}}"
+        },
+        {
+          "data.org_id": {
+            "$in": {
+              "collection": "Operational_Businesses",
+              "field": "data.org_id",
+              "filter": {
+                "data.primary_instructor_email": "{{user.email}}"
+              }
+            }
+          }
+        },
+        {
+          "data.org_id": {
+            "$in": {
+              "collection": "Operational_Businesses",
+              "field": "data.parent_company_id",
+              "filter": {
+                "$or": [
+                  {
+                    "data.primary_instructor_uid": "{{user.email}}"
+                  },
+                  {
+                    "data.secondary_instructor_uid": "{{user.email}}"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.coach_id": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

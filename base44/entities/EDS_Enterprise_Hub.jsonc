@@ -1,0 +1,106 @@
+{
+  "name": "EDS_Enterprise_Hub",
+  "type": "object",
+  "properties": {
+    "business_name": {
+      "type": "string",
+      "title": "Business Name",
+      "description": "e.g., 'Emerging Defense Solutions' (parent company)"
+    },
+    "brand_url": {
+      "type": "string",
+      "title": "Brand URL",
+      "description": "Company website or domain"
+    },
+    "primary_instructor_uid": {
+      "type": "string",
+      "title": "Primary Instructor Email",
+      "description": "Owner/founder email (e.g., asaad@eds-360.com)"
+    },
+    "secondary_instructor_uid": {
+      "type": "string",
+      "title": "Secondary Instructor Email",
+      "description": "Co-owner/co-founder (e.g., shauntze@eds-360.com)"
+    },
+    "revenue_target_usd": {
+      "type": "number",
+      "title": "Annual Revenue Target (USD)"
+    },
+    "total_active_students": {
+      "type": "number",
+      "title": "Total Active Students Across All Orgs",
+      "default": 0
+    },
+    "total_organizations": {
+      "type": "number",
+      "title": "Number of Sub-Organizations",
+      "default": 0
+    },
+    "health_status": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "at_risk",
+        "critical"
+      ],
+      "title": "Business Health Status",
+      "default": "healthy",
+      "description": "Based on revenue targets and student retention"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Metrics Update"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Business Notes / Strategy"
+    }
+  },
+  "required": [
+    "business_name",
+    "primary_instructor_uid"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.primary_instructor_uid": "{{user.email}}"
+        },
+        {
+          "data.secondary_instructor_uid": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.primary_instructor_uid": "{{user.email}}"
+        },
+        {
+          "data.secondary_instructor_uid": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

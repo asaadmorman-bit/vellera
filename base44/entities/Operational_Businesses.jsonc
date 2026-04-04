@@ -1,0 +1,142 @@
+{
+  "name": "Operational_Businesses",
+  "type": "object",
+  "properties": {
+    "org_id": {
+      "type": "string",
+      "title": "Organization ID",
+      "description": "Reference to Organization entity"
+    },
+    "org_name": {
+      "type": "string",
+      "title": "Organization Name",
+      "description": "e.g., 'Mow Dojo', 'Heritage Shield'"
+    },
+    "parent_company_id": {
+      "type": "string",
+      "title": "Parent EDS Hub ID",
+      "description": "Link to EDS_Enterprise_Hub for hierarchy"
+    },
+    "location": {
+      "type": "string",
+      "title": "Physical Location"
+    },
+    "primary_instructor_email": {
+      "type": "string",
+      "title": "Primary Instructor Email"
+    },
+    "student_roster_count": {
+      "type": "number",
+      "title": "Active Students in This Org",
+      "default": 0
+    },
+    "monthly_revenue_usd": {
+      "type": "number",
+      "title": "Monthly Revenue (USD)",
+      "default": 0
+    },
+    "health_score": {
+      "type": "number",
+      "title": "Health Score (0-100)",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 75
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "closed"
+      ],
+      "title": "Operational Status",
+      "default": "active"
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Launch Date"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Operational Notes"
+    }
+  },
+  "required": [
+    "org_id",
+    "org_name",
+    "parent_company_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.primary_instructor_email": "{{user.email}}"
+        },
+        {
+          "data.parent_company_id": {
+            "$in": {
+              "collection": "EDS_Enterprise_Hub",
+              "field": "id",
+              "filter": {
+                "$or": [
+                  {
+                    "data.primary_instructor_uid": "{{user.email}}"
+                  },
+                  {
+                    "data.secondary_instructor_uid": "{{user.email}}"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.primary_instructor_email": "{{user.email}}"
+        },
+        {
+          "data.parent_company_id": {
+            "$in": {
+              "collection": "EDS_Enterprise_Hub",
+              "field": "id",
+              "filter": {
+                "$or": [
+                  {
+                    "data.primary_instructor_uid": "{{user.email}}"
+                  },
+                  {
+                    "data.secondary_instructor_uid": "{{user.email}}"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
