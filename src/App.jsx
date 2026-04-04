@@ -83,6 +83,7 @@ const LoadingSpinner = () => (
   </div>
 );
 const SearchConsoleDashboard = lazy(() => import('./pages/SearchConsoleDashboard'));
+const MemberOnboarding = lazy(() => import('./pages/MemberOnboarding'));
 // Add page imports here
 
 const PublicApp = () => (
@@ -189,6 +190,7 @@ const AuthenticatedApp = () => {
       <Route path="/stats" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><StatsDashboard /></Suspense></PageTransition>} />
       <Route path="/nutrition" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><NutritionTracker /></Suspense></PageTransition>} />
       <Route path="/search-console" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><SearchConsoleDashboard /></Suspense></PageTransition>} />
+      <Route path="/member-onboarding" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><MemberOnboarding /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
