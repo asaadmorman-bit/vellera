@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Send, MessageCircle, Edit3 } from 'lucide-react';
+import { Send, MessageCircle, Edit3, Maximize } from 'lucide-react';
 import VideoTelestration from './VideoTelestration';
+import TelestrationCanvas from './TelestrationCanvas';
 
 /**
  * ReviewBridge: Side-by-side video + feedback form
@@ -14,6 +15,8 @@ export default function ReviewBridge({ taskId }) {
   const [collaborativeNote, setCollaborativeNote] = useState('');
   const [sending, setSending] = useState(false);
   const [user, setUser] = useState(null);
+  const [showTelestration, setShowTelestration] = useState(false);
+  const [annotatedImage, setAnnotatedImage] = useState(null);
 
   useEffect(() => {
     const init = async () => {
@@ -82,9 +85,26 @@ export default function ReviewBridge({ taskId }) {
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Video + Telestration */}
         <div className="space-y-4">
-          <div className="bg-black rounded-xl overflow-hidden border border-commander-border">
-            {task.submitted_url && <VideoTelestration videoUrl={task.submitted_url} />}
-          </div>
+          {showTelestration ? (
+            <TelestrationCanvas 
+              videoFrame={task.submitted_url} 
+              onSave={(image) => {
+                setAnnotatedImage(image);
+                toast.success('Annotation saved!');
+              }}
+            />
+          ) : (
+            <div className="bg-black rounded-xl overflow-hidden border border-commander-border relative">
+              {task.submitted_url && <VideoTelestration videoUrl={task.submitted_url} />}
+              <button
+                onClick={() => setShowTelestration(true)}
+                className="absolute top-4 right-4 bg-black/60 px-3 py-2 rounded-lg text-vellera-blue hover:bg-black/80 transition flex items-center gap-2"
+              >
+                <Edit3 className="w-4 h-4" />
+                Draw
+              </button>
+            </div>
+          )}
           <div className="text-commander-muted text-sm">
             <p>Student: {task.student_email}</p>
             <p>Submitted: {new Date(task.submitted_date).toLocaleDateString()}</p>
