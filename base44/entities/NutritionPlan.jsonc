@@ -1,0 +1,128 @@
+{
+  "name": "NutritionPlan",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "day_type": {
+      "type": "string",
+      "enum": [
+        "BJJ Training Day",
+        "Strength Day",
+        "Rest Day",
+        "Active Recovery"
+      ],
+      "title": "Day Type",
+      "default": "Rest Day"
+    },
+    "target_calories": {
+      "type": "number",
+      "title": "Target Calories (kcal)"
+    },
+    "target_protein_g": {
+      "type": "number",
+      "title": "Target Protein (g)"
+    },
+    "target_carbs_g": {
+      "type": "number",
+      "title": "Target Carbs (g)"
+    },
+    "target_fat_g": {
+      "type": "number",
+      "title": "Target Fat (g)"
+    },
+    "actual_calories": {
+      "type": "number",
+      "title": "Actual Calories Consumed",
+      "default": 0
+    },
+    "actual_protein_g": {
+      "type": "number",
+      "title": "Actual Protein (g)",
+      "default": 0
+    },
+    "actual_carbs_g": {
+      "type": "number",
+      "title": "Actual Carbs (g)",
+      "default": 0
+    },
+    "actual_fat_g": {
+      "type": "number",
+      "title": "Actual Fat (g)",
+      "default": 0
+    },
+    "hydration_oz": {
+      "type": "number",
+      "title": "Water Intake (oz)",
+      "default": 0
+    },
+    "pre_training_meal": {
+      "type": "string",
+      "title": "Pre-Training Meal Notes"
+    },
+    "post_training_meal": {
+      "type": "string",
+      "title": "Post-Training Meal Notes"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Daily Notes"
+    },
+    "weight_lbs": {
+      "type": "number",
+      "title": "Morning Weight (lbs)"
+    },
+    "recovery_score": {
+      "type": "number",
+      "title": "Recovery Score (0-100)"
+    }
+  },
+  "required": [
+    "date",
+    "day_type"
+  ],
+  "rls": {
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
