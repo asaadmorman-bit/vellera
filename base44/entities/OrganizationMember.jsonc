@@ -1,0 +1,103 @@
+{
+  "name": "OrganizationMember",
+  "type": "object",
+  "properties": {
+    "org_id": {
+      "type": "string",
+      "title": "Organization ID"
+    },
+    "user_email": {
+      "type": "string",
+      "title": "User Email"
+    },
+    "user_name": {
+      "type": "string",
+      "title": "User Name"
+    },
+    "member_type": {
+      "type": "string",
+      "enum": [
+        "INSTRUCTOR",
+        "STUDENT",
+        "ADMIN"
+      ],
+      "title": "Member Type",
+      "default": "STUDENT"
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Certifications/Specialties",
+      "description": "e.g., ['BJJ Blue Belt', 'CPR Certified']"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "suspended"
+      ],
+      "title": "Membership Status",
+      "default": "active"
+    },
+    "joined_date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Join Date"
+    }
+  },
+  "required": [
+    "org_id",
+    "user_email",
+    "member_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "data.org_id": {
+        "$in": {
+          "collection": "OrganizationMember",
+          "field": "data.org_id",
+          "filter": {
+            "data.user_email": "{{user.email}}"
+          }
+        }
+      }
+    },
+    "update": {
+      "$or": [
+        {
+          "data.org_id": {
+            "$in": {
+              "collection": "Organization",
+              "field": "id",
+              "filter": {
+                "data.owner_emails": {
+                  "$in": [
+                    "{{user.email}}"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
