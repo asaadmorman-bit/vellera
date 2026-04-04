@@ -68,6 +68,7 @@ const ZuluMasterProtocol = lazy(() => import('./pages/ZuluMasterProtocol'));
 const BJJTacticalJournal = lazy(() => import('./pages/BJJTacticalJournal'));
 const TrainingCorrelationDashboard = lazy(() => import('./pages/TrainingCorrelationDashboard'));
 const MealPlanner = lazy(() => import('./pages/MealPlanner'));
+const HydrationTracker = lazy(() => import('./pages/HydrationTracker'));
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-commander-dark z-50">
@@ -171,6 +172,7 @@ const AuthenticatedApp = () => {
       <Route path="/bjj-journal" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><BJJTacticalJournal /></Suspense></PageTransition>} />
       <Route path="/correlation" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><TrainingCorrelationDashboard /></Suspense></PageTransition>} />
       <Route path="/meal-planner" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><MealPlanner /></Suspense></PageTransition>} />
+      <Route path="/hydration" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><HydrationTracker /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
