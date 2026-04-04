@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Flame, Beef, Wheat, Droplets, Save, RefreshCw, ChevronDown } from "lucide-react";
+import WeightProgressionWidget from "../components/WeightProgressionWidget";
 import { useNavigate } from "react-router-dom";
 
 // --- Macro Calculation Engine ---
@@ -88,6 +89,7 @@ export default function NutritionTracker() {
   const [recovery, setRecovery] = useState("");
   const [notes, setNotes] = useState("");
   const [showHistory, setShowHistory] = useState(false);
+  const [caloricAdjustment, setCaloricAdjustment] = useState(0);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -143,7 +145,11 @@ export default function NutritionTracker() {
 
   const weightLbs = parseFloat(weight) || profile?.zulu_current_weight_lbs || 225;
   const recoveryScore = parseFloat(recovery) || null;
-  const targets = calcMacros({ weightLbs, dayType, recoveryScore });
+  const baseTargets = calcMacros({ weightLbs, dayType, recoveryScore });
+  const targets = {
+    ...baseTargets,
+    calories: Math.max(1500, baseTargets.calories + caloricAdjustment),
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -286,6 +292,12 @@ export default function NutritionTracker() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Weight Progression & Auto-Adjustment */}
+      <div className="space-y-2">
+        <p className="text-commander-muted text-xs uppercase tracking-widest font-bold">Weight Progression & Auto-Calorie Adjust</p>
+        <WeightProgressionWidget onAdjustmentReady={adj => setCaloricAdjustment(adj)} />
       </div>
 
       {/* Notes */}
