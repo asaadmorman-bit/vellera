@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BJJBadgesShowcase from "../components/BJJBadgesShowcase";
 import { ChevronRight, Zap, Heart, Dumbbell, Shield, Music, Star, ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import PricingSection from "../components/PricingSection";
@@ -303,6 +304,9 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* BJJ Badges Showcase */}
+      <BJJBadgesShowcase />
 
       {/* Pricing Section */}
       <PricingSection />
