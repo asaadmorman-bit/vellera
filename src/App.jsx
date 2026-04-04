@@ -89,6 +89,8 @@ const CoachDashboard = lazy(() => import('./pages/CoachDashboard'));
 const StudentHub = lazy(() => import('./pages/StudentHub'));
 const InstructorOrgDashboard = lazy(() => import('./pages/InstructorOrgDashboard'));
 const StudentMobileHome = lazy(() => import('./pages/StudentMobileHome'));
+const ReferralPortal = lazy(() => import('./pages/ReferralPortal'));
+const CoachShowcase = lazy(() => import('./pages/CoachShowcase'));
 // Add page imports here
 
 const PublicApp = () => (
@@ -201,6 +203,8 @@ const AuthenticatedApp = () => {
       <Route path="/student-hub" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><StudentHub /></Suspense></PageTransition>} />
       <Route path="/org-dashboard" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><InstructorOrgDashboard /></Suspense></PageTransition>} />
       <Route path="/submit-video" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><StudentMobileHome /></Suspense></PageTransition>} />
+      <Route path="/referral" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ReferralPortal /></Suspense></PageTransition>} />
+      <Route path="/coach/:coachId" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><CoachShowcase /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
