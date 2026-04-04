@@ -358,7 +358,7 @@ export default function Landing() {
                   </Link>
                 </li>
                 <li>
-                  <a href="mailto:hello@vellera.io" className="hover:text-vellera-blue transition">
+                  <a href="mailto:vellera@eds-360.com" className="hover:text-vellera-blue transition">
                     Contact
                   </a>
                 </li>

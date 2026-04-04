@@ -85,7 +85,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-2xl font-bold text-vellera-blue mb-3">9. Contact Us</h2>
             <p>
-              If you have any questions about these Terms of Service, please contact us at <a href="mailto:hello@vellera.io" className="text-vellera-blue hover:text-vellera-green transition">hello@vellera.io</a>.
+              If you have any questions about these Terms of Service, please contact us at <a href="mailto:vellera@eds-360.com" className="text-vellera-blue hover:text-vellera-green transition">vellera@eds-360.com</a>.
             </p>
           </section>
         </div>
