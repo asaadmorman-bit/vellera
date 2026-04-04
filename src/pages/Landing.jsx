@@ -374,7 +374,7 @@ export default function Landing() {
                   </a>
                 </li>
                 <li>
-                  <a href="https://instagram.com/vellera" target="_blank" rel="noopener noreferrer" className="hover:text-vellera-blue transition">
+                  <a href="https://instagram.com/vellerafitness" target="_blank" rel="noopener noreferrer" className="hover:text-vellera-blue transition">
                     Instagram
                   </a>
                 </li>
