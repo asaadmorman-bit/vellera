@@ -1,0 +1,202 @@
+{
+  "name": "ClinicalAssessment",
+  "type": "object",
+  "properties": {
+    "patient_email": {
+      "type": "string",
+      "title": "Patient Email",
+      "description": "FHIR: Patient.identifier"
+    },
+    "coach_email": {
+      "type": "string",
+      "title": "Coach/Clinician Email",
+      "description": "FHIR: Practitioner.identifier"
+    },
+    "assessment_type": {
+      "type": "string",
+      "enum": [
+        "beighton",
+        "lefs",
+        "combined"
+      ],
+      "title": "Assessment Type",
+      "description": "FHIR: Observation.code"
+    },
+    "assessment_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Assessment Date",
+      "description": "FHIR: Observation.effectiveDateTime"
+    },
+    "beighton_score": {
+      "type": "number",
+      "title": "Beighton Hypermobility Score (0-9)",
+      "minimum": 0,
+      "maximum": 9,
+      "description": "FHIR: Observation.valueInteger"
+    },
+    "beighton_inputs": {
+      "type": "object",
+      "title": "Beighton Individual Test Results",
+      "description": "FHIR: Observation.component[]",
+      "properties": {
+        "pinky_left": {
+          "type": "boolean",
+          "title": "Pinky >90\u00b0 (Left)"
+        },
+        "pinky_right": {
+          "type": "boolean",
+          "title": "Pinky >90\u00b0 (Right)"
+        },
+        "thumb_left": {
+          "type": "boolean",
+          "title": "Thumb to Forearm (Left)"
+        },
+        "thumb_right": {
+          "type": "boolean",
+          "title": "Thumb to Forearm (Right)"
+        },
+        "elbow_left": {
+          "type": "boolean",
+          "title": "Elbow Hyperextension (Left)"
+        },
+        "elbow_right": {
+          "type": "boolean",
+          "title": "Elbow Hyperextension (Right)"
+        },
+        "knee_left": {
+          "type": "boolean",
+          "title": "Knee Hyperextension (Left)"
+        },
+        "knee_right": {
+          "type": "boolean",
+          "title": "Knee Hyperextension (Right)"
+        },
+        "spinal_flexion": {
+          "type": "boolean",
+          "title": "Forward Flexion \u2014 Palms Flat"
+        }
+      }
+    },
+    "lefs_score": {
+      "type": "number",
+      "title": "LEFS Total Score (0-80)",
+      "minimum": 0,
+      "maximum": 80,
+      "description": "FHIR: Observation.valueInteger"
+    },
+    "lefs_inputs": {
+      "type": "array",
+      "title": "LEFS Item Responses (20 items, 0-4 each)",
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 4
+      },
+      "description": "FHIR: Observation.component[] \u2014 0=Extreme, 4=No difficulty"
+    },
+    "clinical_notes": {
+      "type": "string",
+      "title": "Private Clinical Notes",
+      "description": "FHIR: Observation.note \u2014 restricted by data_sharing_enabled"
+    },
+    "data_sharing_enabled": {
+      "type": "boolean",
+      "title": "Patient Consents to Coach Viewing Medical Notes",
+      "default": false,
+      "description": "FHIR: Consent.status \u2014 controls RLS for clinical_notes visibility"
+    },
+    "report_url": {
+      "type": "string",
+      "title": "Generated PDF Report URL"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "complete",
+        "exported"
+      ],
+      "title": "Assessment Status",
+      "default": "draft"
+    }
+  },
+  "required": [
+    "patient_email",
+    "assessment_type",
+    "assessment_date"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.patient_email": "{{user.email}}"
+        },
+        {
+          "data.coach_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.patient_email": "{{user.email}}"
+        },
+        {
+          "$and": [
+            {
+              "data.coach_email": "{{user.email}}"
+            },
+            {
+              "data.data_sharing_enabled": true
+            }
+          ]
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.patient_email": "{{user.email}}"
+        },
+        {
+          "$and": [
+            {
+              "data.coach_email": "{{user.email}}"
+            },
+            {
+              "data.data_sharing_enabled": true
+            }
+          ]
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.patient_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

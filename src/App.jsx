@@ -95,6 +95,7 @@ const HybridAthlete = lazy(() => import('./pages/HybridAthlete'));
 const BJJStrengthConditioning = lazy(() => import('./pages/BJJStrengthConditioning'));
 const ExecutiveFitnessDefense = lazy(() => import('./pages/ExecutiveFitnessDefense'));
 const EDS_Executive_Dashboard = lazy(() => import('./pages/EDS_Executive_Dashboard'));
+const ClinicalDashboard = lazy(() => import('./pages/ClinicalDashboard'));
 // Add page imports here
 
 const PublicApp = () => (
@@ -212,6 +213,7 @@ const AuthenticatedApp = () => {
       <Route path="/hybrid-athlete" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><HybridAthlete /></Suspense></PageTransition>} />
       <Route path="/bjj-strength-conditioning" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><BJJStrengthConditioning /></Suspense></PageTransition>} />
       <Route path="/executive-fitness-defense" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ExecutiveFitnessDefense /></Suspense></PageTransition>} />
+      <Route path="/clinical" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ClinicalDashboard /></Suspense></PageTransition>} />
       <Route path="/eds-dashboard" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><EDS_Executive_Dashboard /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

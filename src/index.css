@@ -119,41 +119,33 @@ body, html {
 .bg-vellera-dark { background-color: #121212; }
 
 @layer base {
-  * {
-    @apply border-border;
+  /* WCAG 2.1 AA — Global focus indicators */
+  :focus-visible {
+    outline: 2px solid #00E5FF;
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 
-  body {
-    @apply bg-background text-foreground;
+  /* Remove focus style for mouse users only */
+  :focus:not(:focus-visible) {
+    outline: none;
   }
 
-  /* Safe area padding for notches/system UI */
-  .safe-area-top {
-    padding-top: max(1rem, env(safe-area-inset-top));
+  /* High-contrast skip link for keyboard nav */
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    background: #00E5FF;
+    color: #121212;
+    padding: 8px 16px;
+    font-weight: 900;
+    z-index: 9999;
+    border-radius: 0 0 8px 0;
   }
-
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  /* 44x44px minimum touch target */
-  .touch-target-min {
-    min-height: 44px;
-    min-width: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Disable overscroll bounce and user selection */
-  body {
-    overscroll-behavior: none;
-  }
-
-  /* Prevent iOS overscroll bounce on scrollable containers */
-  .overscroll-contain {
-    overscroll-behavior-y: contain;
-    -webkit-overflow-scrolling: touch;
+  .skip-link:focus {
+    top: 0;
+    outline: 3px solid #CCFF00;
   }
 
   button, nav, [role="navigation"] {
