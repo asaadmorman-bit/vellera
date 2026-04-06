@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { base44 } from "@/api/base44Client";
 import BJJBadgesShowcase from "../components/BJJBadgesShowcase";
 import { ChevronRight, Zap, Heart, Dumbbell, Shield, Music, Star, ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -315,7 +316,7 @@ export default function Landing() {
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-5xl font-black mb-8">Ready to find your pace?</h2>
 
-          <button className="px-8 py-4 bg-gradient-to-r from-vellera-blue to-vellera-green text-vellera-dark font-bold rounded-xl text-lg hover:shadow-2xl hover:shadow-vellera-blue/50 transition-all">
+          <button onClick={() => base44.auth.redirectToLogin('/dashboard')} className="px-8 py-4 bg-gradient-to-r from-vellera-blue to-vellera-green text-vellera-dark font-bold rounded-xl text-lg hover:shadow-2xl hover:shadow-vellera-blue/50 transition-all">
             Start Your 7-Day Free Trial
           </button>
 
