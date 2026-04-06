@@ -1,0 +1,107 @@
+{
+  "name": "WellnessLog",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "title": "Patient / Athlete Email"
+    },
+    "log_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Log Date"
+    },
+    "pain_vas": {
+      "type": "number",
+      "title": "Pain Score \u2014 VAS (0 = No Pain, 10 = Worst Pain)",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Visual Analogue Scale validated for clinical pain tracking"
+    },
+    "pain_location": {
+      "type": "string",
+      "title": "Pain Location (body area)"
+    },
+    "mood_score": {
+      "type": "number",
+      "title": "Mood (1 = Very Low, 5 = Excellent)",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "sleep_hours": {
+      "type": "number",
+      "title": "Sleep Duration (hours)"
+    },
+    "sleep_quality": {
+      "type": "number",
+      "title": "Sleep Quality (1 = Poor, 5 = Excellent)",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "fatigue_score": {
+      "type": "number",
+      "title": "Fatigue (1 = Exhausted, 5 = Fully Energised)",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "readiness_score": {
+      "type": "number",
+      "title": "Training Readiness (0-100)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "symptoms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Active Symptoms",
+      "description": "e.g. ['swelling', 'stiffness', 'headache']"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Patient Notes"
+    },
+    "flagged": {
+      "type": "boolean",
+      "title": "Clinician Flag for Review",
+      "default": false
+    }
+  },
+  "required": [
+    "user_email",
+    "log_date"
+  ],
+  "rls": {
+    "create": {
+      "data.user_email": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "data.user_email": "{{user.email}}"
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

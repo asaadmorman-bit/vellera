@@ -1,0 +1,144 @@
+{
+  "name": "Schedule",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Event Title"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "clinic_appointment",
+        "team_practice",
+        "rehab_session",
+        "assessment",
+        "game",
+        "recovery"
+      ],
+      "title": "Event Type",
+      "default": "clinic_appointment"
+    },
+    "organizer_email": {
+      "type": "string",
+      "title": "Organizer Email (Coach / Clinician)"
+    },
+    "participant_emails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Participant Emails"
+    },
+    "start_datetime": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Start Date & Time"
+    },
+    "end_datetime": {
+      "type": "string",
+      "format": "date-time",
+      "title": "End Date & Time"
+    },
+    "location": {
+      "type": "string",
+      "title": "Location"
+    },
+    "org_id": {
+      "type": "string",
+      "title": "Organization ID"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Session Notes"
+    },
+    "conflict_detected": {
+      "type": "boolean",
+      "title": "Conflict Detected",
+      "default": false
+    },
+    "conflict_details": {
+      "type": "string",
+      "title": "Conflict Details"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "confirmed",
+        "cancelled",
+        "completed"
+      ],
+      "title": "Status",
+      "default": "scheduled"
+    },
+    "radix44_share_code": {
+      "type": "string",
+      "title": "Radix-44 Share Code (QR-safe)"
+    }
+  },
+  "required": [
+    "title",
+    "event_type",
+    "organizer_email",
+    "start_datetime",
+    "end_datetime"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.organizer_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.organizer_email": "{{user.email}}"
+        },
+        {
+          "data.participant_emails": {
+            "$in": [
+              "{{user.email}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.organizer_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.organizer_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
