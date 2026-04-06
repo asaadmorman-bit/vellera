@@ -36,7 +36,7 @@ export default function Auth() {
           onClick={handleSignIn}
           disabled={loading}
           className="w-full py-4 rounded-xl font-black text-base flex items-center justify-center gap-3 transition-all min-h-[52px] disabled:opacity-60"
-          style={{ background: 'linear-gradient(135deg, #00E5FF, #CCFF00)', color: '#121212' }}
+          className="w-full py-4 rounded-xl font-black text-base flex items-center justify-center gap-3 transition-all min-h-[52px] disabled:opacity-60 bg-gradient-to-r from-vellera-blue to-vellera-green text-vellera-dark"
         >
           {loading ? (
             <span className="flex items-center gap-2">
