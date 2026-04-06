@@ -2,7 +2,7 @@ import { useState } from "react";
 import BJJBadgesShowcase from "../components/BJJBadgesShowcase";
 import { ChevronRight, Zap, Heart, Dumbbell, Shield, Music, Star, ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import PricingSection from "../components/PricingSection";
+
 
 export default function Landing() {
   const [reviewIndex, setReviewIndex] = useState(0);
@@ -308,8 +308,7 @@ export default function Landing() {
       {/* BJJ Badges Showcase */}
       <BJJBadgesShowcase />
 
-      {/* Pricing Section */}
-      <PricingSection />
+
 
       {/* Final CTA */}
       <section className="py-24 px-4">
