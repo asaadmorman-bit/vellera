@@ -5,20 +5,7 @@ Deno.serve(async (req) => {
   const user = await base44.auth.me();
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // Generate cryptographically secure random state token
-  const state = crypto.getRandomValues(new Uint8Array(32));
-  const stateToken = Array.from(state).map(b => b.toString(16).padStart(2, '0')).join('');
-
-  // Store state with user email in database (expires in 10 minutes)
-  const expiresAt = Date.now() + 10 * 60 * 1000;
-  await base44.asServiceRole.entities.UserAgent.create({
-    state_token: stateToken,
-    provider: 'fitbit',
-    user_email: user.email,
-    created_at: new Date().toISOString(),
-    expires_at: new Date(expiresAt).toISOString(),
-  });
-
+  const state = btoa(JSON.stringify({ email: user.email }));
   const clientId = Deno.env.get('FITBIT_CLIENT_ID');
   const redirectUri = 'https://api.base44.com/api/apps/69c722c665db36b41f55ba9c/functions/fitbitOAuthCallback';
   const scope = 'activity heartrate sleep profile';
@@ -28,7 +15,7 @@ Deno.serve(async (req) => {
     redirect_uri: redirectUri,
     response_type: 'code',
     scope,
-    state: stateToken,
+    state,
   });
 
   return Response.json({ url: `https://www.fitbit.com/oauth2/authorize?${params}` });

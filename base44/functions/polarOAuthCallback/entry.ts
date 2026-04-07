@@ -2,30 +2,26 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
-  const body = await req.json().catch(() => ({}));
-  const { code, state: stateToken } = body;
+  const url = new URL(req.url);
+  const code = url.searchParams.get('code');
+  const state = url.searchParams.get('state');
+  const error = url.searchParams.get('error');
 
-  if (!code || !stateToken) return Response.json({ error: 'Missing code or state' }, { status: 400 });
-
-  // Verify state token and retrieve user email
-  const agents = await base44.asServiceRole.entities.UserAgent.filter({
-    state_token: stateToken,
-    provider: 'polar',
-  });
-
-  if (agents.length === 0) {
-    return Response.json({ error: 'Invalid or expired state token' }, { status: 401 });
+  if (error || !code) {
+    return new Response(`<html><body><script>window.close();</script><p>Connection failed: ${error || 'no code'}</p></body></html>`, { headers: { 'Content-Type': 'text/html' } });
   }
 
-  const agent = agents[0];
-  if (new Date(agent.expires_at) < new Date()) {
-    return Response.json({ error: 'State token expired' }, { status: 401 });
+  let userEmail = null;
+  try {
+    const decoded = JSON.parse(atob(decodeURIComponent(state)));
+    userEmail = decoded.email;
+  } catch (_) {
+    return new Response('<html><body><p>Invalid state</p></body></html>', { headers: { 'Content-Type': 'text/html' }, status: 401 });
   }
 
-  const userEmail = agent.user_email;
-
-  // Clean up used state token
-  await base44.asServiceRole.entities.UserAgent.delete(agent.id);
+  if (!userEmail) {
+    return new Response('<html><body><p>Could not determine user</p></body></html>', { headers: { 'Content-Type': 'text/html' }, status: 401 });
+  }
 
   const clientId = Deno.env.get('POLAR_CLIENT_ID');
   const clientSecret = Deno.env.get('POLAR_CLIENT_SECRET');
@@ -42,7 +38,10 @@ Deno.serve(async (req) => {
   });
   const tokenData = await tokenRes.json();
 
-  if (!tokenData.access_token) return Response.json({ error: 'Token exchange failed', details: tokenData }, { status: 400 });
+  if (!tokenData.access_token) {
+    console.error('Polar token exchange failed:', tokenData);
+    return new Response(`<html><body><p>Token exchange failed</p></body></html>`, { headers: { 'Content-Type': 'text/html' }, status: 500 });
+  }
 
   // Register user with Polar Accesslink
   await fetch('https://www.polaraccesslink.com/v3/users', {
@@ -68,7 +67,7 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.WearableToken.create(payload);
   }
 
-  return new Response('<html><body><script>window.close();</script><p>Polar connected! You can close this window.</p></body></html>', {
+  return new Response('<html><body><script>if(window.opener){window.opener.postMessage("polar_connected","*");window.close();}else{window.location.href="/";}</script><p>Polar connected! You can close this window.</p></body></html>', {
     headers: { 'Content-Type': 'text/html' },
   });
 });

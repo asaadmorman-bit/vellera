@@ -37,11 +37,18 @@ export default function BetaRequestForm() {
       setSubmitted(true);
       toast.success("Request submitted! We'll review and email you soon.");
 
-      // Send confirmation email
+      // Send confirmation email to applicant
       await base44.integrations.Core.SendEmail({
         to: formData.email,
         subject: "Vellera Beta Access Request Received",
         body: `Hi ${formData.full_name},\n\nThank you for your interest in Vellera! We've received your beta access request.\n\nWe're reviewing all requests and will email you within 5 business days with a decision.\n\nIn the meantime, you can learn more at vellera.app\n\nBest,\nThe Vellera Team`,
+      });
+
+      // Notify admin
+      await base44.integrations.Core.SendEmail({
+        to: "vellera@eds-360.com",
+        subject: `New Beta Request: ${formData.full_name}`,
+        body: `New beta access request received:\n\nName: ${formData.full_name}\nEmail: ${formData.email}\nGoal: ${formData.primary_goal}\n\nWhy interested:\n${formData.why_interested}`,
       });
     } catch (err) {
       toast.error("Failed to submit request: " + err.message);
