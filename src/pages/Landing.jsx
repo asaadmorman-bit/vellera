@@ -192,6 +192,56 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── THE NAME ─────────────────────────────────────────────────────── */}
+      <section className="py-16 px-4 border-t border-gray-900">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-xs text-vellera-blue font-bold uppercase tracking-[0.3em] mb-4">The Name</p>
+          <h2 className="text-4xl md:text-5xl font-black mb-6">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-vellera-blue to-vellera-green">Vellera</span>
+          </h2>
+          <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-2xl mx-auto">
+            Derived from the Latin <em className="text-white font-semibold">vellere</em> — meaning <span className="text-vellera-green font-bold">"to pull, to draw out, to forge"</span> — Vellera represents the act of pulling your best self forward. It speaks to the tension athletes live in: pushing through resistance, drawing strength from discipline, and forging identity through consistent effort.
+          </p>
+          <div className="grid md:grid-cols-3 gap-6 text-left">
+            {[
+              {
+                root: "vellere",
+                lang: "Latin",
+                meaning: "To pull, to draw out",
+                interpretation: "Every rep, every roll, every session is you pulling forward — extracting strength that wasn't accessible yesterday."
+              },
+              {
+                root: "vel",
+                lang: "Proto-Indo-European",
+                meaning: "Power & will",
+                interpretation: "The root 'vel' traces back to words for want, will, and volition — the internal drive that separates those who train from those who transform."
+              },
+              {
+                root: "-era",
+                lang: "Suffix · Latin",
+                meaning: "A time, a defining period",
+                interpretation: "This is your era. Not a season, not a phase — a defined chapter in which you chose to take your body, mind, and discipline seriously."
+              },
+            ].map(({ root, lang, meaning, interpretation }) => (
+              <div key={root} className="bg-gray-900 border border-gray-800 rounded-2xl p-5 hover:border-gray-600 transition-all">
+                <div className="mb-3">
+                  <p className="text-vellera-blue font-black text-xl italic">{root}</p>
+                  <p className="text-gray-500 text-xs uppercase tracking-widest mt-0.5">{lang}</p>
+                </div>
+                <p className="text-vellera-green font-bold text-sm mb-2">{meaning}</p>
+                <p className="text-gray-400 text-sm leading-relaxed">{interpretation}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 bg-gradient-to-r from-vellera-blue/10 to-vellera-green/10 border border-vellera-blue/20 rounded-2xl px-8 py-6">
+            <p className="text-white text-xl font-black italic">
+              "You are not just tracking workouts. You are in the process of becoming."
+            </p>
+            <p className="text-commander-muted text-sm mt-2">— The Vellera Philosophy</p>
+          </div>
+        </div>
+      </section>
+
       {/* ── APP FEATURE SCREENSHOTS ───────────────────────────────────────── */}
       <section className="py-24 px-4 border-t border-gray-900">
         <div className="max-w-7xl mx-auto">
