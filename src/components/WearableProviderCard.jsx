@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { CheckCircle, RefreshCw, Unlink, Loader2 } from "lucide-react";
+import { CheckCircle, RefreshCw, Unlink, Loader2, ToggleLeft, ToggleRight } from "lucide-react";
 
-export default function WearableProviderCard({ provider, token, onRefresh }) {
+const PROVIDER_CONFIG = {
+  strava:     { label: "Strava",     emoji: "🚴", color: "border-orange-600", accent: "text-orange-400", bg: "bg-orange-950/30", startFn: "stravaOAuthStart",   syncFn: "stravaSync" },
+  fitbit:     { label: "Fitbit",     emoji: "💙", color: "border-blue-600",   accent: "text-blue-400",   bg: "bg-blue-950/30",   startFn: "fitbitOAuthStart",    syncFn: "fitbitSync" },
+  polar:      { label: "Polar",      emoji: "❤️", color: "border-red-600",    accent: "text-red-400",    bg: "bg-red-950/30",    startFn: "polarOAuthStart",     syncFn: "polarSync" },
+  whoop:      { label: "Whoop",      emoji: "⚡", color: "border-yellow-600", accent: "text-yellow-400", bg: "bg-yellow-950/30", startFn: "whoopOAuthStart",     syncFn: "whoopSync" },
+  google_fit: { label: "Google Fit", emoji: "💚", color: "border-green-600",  accent: "text-green-400",  bg: "bg-green-950/30",  startFn: "googleFitOAuthStart", syncFn: "googleFitSync" },
+};
+
+export default function WearableProviderCard({ provider, token, syncEnabled, onToggleSync, onRefresh }) {
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
-  const PROVIDERS = {
-    strava:     { label: "Strava",     emoji: "🚴", color: "border-orange-600", accent: "text-orange-400", bg: "bg-orange-950/30", startFn: "stravaOAuthStart", syncFn: "stravaSync" },
-    google_fit: { label: "Google Fit", emoji: "💚", color: "border-green-600",  accent: "text-green-400",  bg: "bg-green-950/30",  startFn: "googleFitOAuthStart", syncFn: "googleFitSync" },
-    fitbit:     { label: "Fitbit",     emoji: "💙", color: "border-blue-600",  accent: "text-blue-400",  bg: "bg-blue-950/30",  startFn: "fitbitOAuthStart",  syncFn: "fitbitSync" },
-    polar:      { label: "Polar",      emoji: "❤️", color: "border-red-600",   accent: "text-red-400",   bg: "bg-red-950/30",   startFn: "polarOAuthStart",   syncFn: "polarSync" },
-    whoop:      { label: "Whoop",      emoji: "⚡",  color: "border-yellow-600", accent: "text-yellow-400", bg: "bg-yellow-950/30", startFn: "whoopOAuthStart",   syncFn: "whoopSync" },
-  };
-
-  const cfg = PROVIDERS[provider];
+  const cfg = PROVIDER_CONFIG[provider];
   const connected = !!token;
 
   const handleConnect = async () => {
@@ -75,20 +75,36 @@ export default function WearableProviderCard({ provider, token, onRefresh }) {
                 Synced {new Date(token.last_synced).toLocaleDateString()}
               </p>
             )}
+            {connected && !token.last_synced && (
+              <p className="text-xs text-commander-muted">Connected · not synced yet</p>
+            )}
           </div>
         </div>
-        {connected && <CheckCircle className={`w-4 h-4 ${cfg.accent}`} />}
+        <div className="flex items-center gap-2">
+          {connected && (
+            <button
+              onClick={onToggleSync}
+              className={`transition-all ${syncEnabled ? cfg.accent : "text-gray-600"}`}
+              title={syncEnabled ? "Pause sync" : "Enable sync"}
+            >
+              {syncEnabled
+                ? <ToggleRight className="w-7 h-7" />
+                : <ToggleLeft className="w-7 h-7" />}
+            </button>
+          )}
+          {connected && <CheckCircle className={`w-4 h-4 ${cfg.accent}`} />}
+        </div>
       </div>
 
       {connected ? (
         <div className="flex gap-2">
           <button
             onClick={handleSync}
-            disabled={syncing}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold border ${cfg.color} ${cfg.accent} hover:opacity-80 transition-all`}
+            disabled={syncing || !syncEnabled}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold border ${cfg.color} ${cfg.accent} hover:opacity-80 transition-all disabled:opacity-40`}
           >
             {syncing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-            {syncing ? "Syncing..." : "Sync Now"}
+            {syncing ? "Syncing..." : syncEnabled ? "Sync Now" : "Paused"}
           </button>
           <button
             onClick={handleDisconnect}

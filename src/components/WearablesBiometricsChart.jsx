@@ -4,10 +4,12 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Activity, Heart, Zap, Loader2 } from "lucide-react";
 
 const METRICS = [
-  { key: "hrv", label: "HRV", unit: "ms", color: "#00E5FF", icon: Activity },
-  { key: "resting_heart_rate", label: "Resting HR", unit: "bpm", color: "#CCFF00", icon: Heart },
-  { key: "training_strain", label: "Training Strain", unit: "", color: "#a855f7", icon: Zap },
+  { key: "hrv", label: "HRV", unit: "ms", color: "#00E5FF" },
+  { key: "resting_heart_rate", label: "Resting HR", unit: "bpm", color: "#CCFF00" },
+  { key: "training_strain", label: "Strain", unit: "", color: "#a855f7" },
 ];
+
+const ICONS = { hrv: Activity, resting_heart_rate: Heart, training_strain: Zap };
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -71,21 +73,24 @@ export default function WearablesBiometricsChart() {
           <p className="text-commander-muted text-xs">Last 14 days</p>
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
-          {METRICS.map(({ key, label, color, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => toggleMetric(key)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all ${
-                activeMetrics.includes(key)
-                  ? "border-transparent text-black"
-                  : "border-gray-700 text-gray-500 bg-transparent"
-              }`}
-              style={activeMetrics.includes(key) ? { backgroundColor: color } : {}}
-            >
-              <Icon className="w-3 h-3" />
-              {label}
-            </button>
-          ))}
+          {METRICS.map(({ key, label, color }) => {
+            const Icon = ICONS[key];
+            return (
+              <button
+                key={key}
+                onClick={() => toggleMetric(key)}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                  activeMetrics.includes(key)
+                    ? "border-transparent text-black"
+                    : "border-gray-700 text-gray-500 bg-transparent"
+                }`}
+                style={activeMetrics.includes(key) ? { backgroundColor: color } : {}}
+              >
+                <Icon className="w-3 h-3" />
+                {label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
