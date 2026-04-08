@@ -79,7 +79,7 @@ export default function ReviewBridge({ taskId }) {
   }
 
   return (
-    <div className="p-4 space-y-4 max-w-5xl mx-auto pb-24">
+    <div className="p-4 space-y-4 max-w-5xl mx-auto pb-24 pt-safe">
       <h1 className="text-white text-2xl font-black">{task.title} — Review</h1>
 
       <div className="grid lg:grid-cols-2 gap-4">

@@ -312,7 +312,7 @@ export default function ActiveWorkout({ workout: workoutProp }) {
       />
 
       {/* ── Header ── */}
-      <header className="relative z-20 px-4 py-4 flex items-center justify-between border-b border-gray-800 bg-black/40 backdrop-blur">
+      <header className="relative z-20 px-4 py-4 flex items-center justify-between border-b border-gray-800 bg-black/40 backdrop-blur pt-safe">
         <button
           onClick={handleEndWorkout}
           className="min-h-[44px] min-w-[44px] flex items-center justify-center bg-red-900/50 hover:bg-red-900 border border-red-800 rounded-lg transition-all"

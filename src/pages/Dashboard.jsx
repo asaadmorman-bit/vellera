@@ -3,8 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 // import SafetyValve from "../components/SafetyValve";
-// import { usePullToRefresh } from "../hooks/usePullToRefresh";
-// import { useTabStack } from "../hooks/useTabStack";
+import { usePullToRefresh } from "../hooks/usePullToRefresh";
 // import RecoveryPerformanceWidget from "../components/RecoveryPerformanceWidget";
 // import RecoveryCommandCenter from "../components/RecoveryCommandCenter";
 // import WhoopConnect from "../components/WhoopConnect";
@@ -136,8 +135,7 @@ export default function Dashboard() {
     }
   };
 
-  // const pullRef = usePullToRefresh(handleRefresh);
-  // useTabStack(containerRef);
+  const pullRef = usePullToRefresh(handleRefresh);
 
   const userWeight = userProfile?.weight_kg || 113;
   const waterTarget = Math.round(userWeight * 0.5 + 32);
@@ -151,7 +149,7 @@ export default function Dashboard() {
   const heroImg = WARRIOR_IMAGES[today.getDay() % WARRIOR_IMAGES.length];
 
   return (
-    <div ref={containerRef} className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top overflow-auto h-screen">
+    <div ref={pullRef} className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top overflow-auto h-screen">
       <MorningReadinessAlert />
       {/* Refresh Indicator */}
       {refreshing && (

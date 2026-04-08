@@ -57,7 +57,7 @@ export default function CombatHub() {
         </div>
         <button
           onClick={() => setAnthemPlaying(!anthemPlaying)}
-          className="p-3 rounded-full bg-red-600/20 hover:bg-red-600/40 transition-all"
+          className="p-3 rounded-full bg-red-600/20 hover:bg-red-600/40 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
           {anthemPlaying ? (
             <Volume2 className="w-5 h-5 text-red-400" />
@@ -73,7 +73,7 @@ export default function CombatHub() {
           <button
             key={cat.title}
             onClick={() => navigate(cat.route)}
-            className={`w-full bg-gradient-to-br ${cat.bgAccent} border ${cat.borderAccent} rounded-xl p-5 text-left hover:border-opacity-100 transition-all group`}
+            className={`w-full bg-gradient-to-br ${cat.bgAccent} border ${cat.borderAccent} rounded-xl p-5 text-left hover:border-opacity-100 transition-all group min-h-[44px]`}
           >
             <div className="flex items-start justify-between">
               <div className="space-y-2 flex-1">

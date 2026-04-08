@@ -98,6 +98,7 @@ export default function TabStackLayout() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [spotifyOpen, setSpotifyOpen] = useState(false);
   const scrollRefs = useRef({});
+  const tabPathsRef = useRef({}); // remember last visited path per tab
 
   // Enforce strict dark mode on Android
   useEffect(() => {
@@ -120,20 +121,25 @@ export default function TabStackLayout() {
     return () => clearInterval(t);
   }, [allImages]);
 
-  // Map current path to tab ID
+  // Map current path to tab ID — supports sub-routes (e.g. /training/foo → training)
   const getCurrentTabId = () => {
-    const tab = PRIMARY_NAV.find(nav => nav.path === pathname);
-    return tab ? tab.id : "home";
+    // Exact match first
+    const exact = PRIMARY_NAV.find(nav => nav.path === pathname);
+    if (exact) return exact.id;
+    // Prefix match for sub-routes (skip root "/")
+    const prefix = PRIMARY_NAV.find(nav => nav.path !== "/" && pathname.startsWith(nav.path + "/"));
+    return prefix ? prefix.id : "home";
   };
 
   const currentTabId = getCurrentTabId();
 
-  // Reset scroll when pathname changes
+  // Store last visited path per tab & reset scroll on route change
   useEffect(() => {
+    tabPathsRef.current[currentTabId] = pathname;
     if (scrollRefs.current[currentTabId]) {
       scrollRefs.current[currentTabId] = 0;
     }
-  }, [pathname]);
+  }, [pathname, currentTabId]);
 
   return (
     <div className="h-screen bg-commander-dark flex flex-col relative overflow-hidden">
@@ -233,12 +239,13 @@ export default function TabStackLayout() {
       {/* Bottom Nav - 5 tabs */}
       <nav className="bg-commander-surface/95 backdrop-blur border-t border-commander-border px-2 py-3 fixed bottom-0 left-0 right-0 z-50 pb-safe">
         <div className="flex justify-around">
-          {PRIMARY_NAV.map(({ path, label, icon: Icon, glow }) => {
-            const active = pathname === path;
+          {PRIMARY_NAV.map(({ path, label, icon: Icon, id, glow }) => {
+            const active = currentTabId === id;
+            const navTo = tabPathsRef.current[id] || path;
             return (
               <Link
                 key={path}
-                to={path}
+                to={navTo}
                 className={`flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
                   active
                     ? glow
