@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate, Link } from "react-router-dom";
+import BetaAgentChat from "../components/admin/BetaAgentChat";
 import {
   Users, Clock, CheckCircle, XCircle, Activity, TrendingUp,
   RefreshCw, Shield, BarChart3, Target, Flame, Calendar,
-  ChevronRight, AlertCircle, UserCheck, Mail
+  ChevronRight, AlertCircle, UserCheck, Mail, Loader2
 } from "lucide-react";
+import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from "recharts";
 
 function StatCard({ label, value, sub, icon: Icon, color = "text-vellera-blue" }) {
@@ -43,6 +45,9 @@ export default function AdminDashboard() {
   const [testers, setTesters] = useState([]);
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
+  const [allUsers, setAllUsers] = useState([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -63,6 +68,7 @@ export default function AdminDashboard() {
     setRequests(reqs);
     setTesters(tstrs);
     setUsers(usrs);
+    setAllUsers(usrs);
     setLoading(false);
   };
 
@@ -140,9 +146,10 @@ export default function AdminDashboard() {
         <div className="flex gap-2 mb-8 border-b border-commander-border pb-4">
           {[
             { id: "overview", label: "Overview", icon: BarChart3 },
-            { id: "requests", label: `Requests (${requests.length})`, icon: Mail },
-            { id: "testers",  label: `Testers (${testers.length})`,  icon: UserCheck },
-            { id: "users",    label: `Users (${users.length})`,      icon: Users },
+              { id: "requests", label: `Requests (${requests.length})`, icon: Mail },
+              { id: "testers",  label: `Testers (${testers.length})`,  icon: UserCheck },
+              { id: "users",    label: `Users (${users.length})`,      icon: Users },
+              { id: "admins",   label: "Admins",                       icon: Shield },
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -162,6 +169,9 @@ export default function AdminDashboard() {
         {/* ── OVERVIEW TAB ─────────────────────────────────────────────── */}
         {activeTab === "overview" && (
           <div className="space-y-8">
+            {/* Agent Chat */}
+            <BetaAgentChat />
+
             {/* KPI Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard label="Total Requests"   value={requests.length}  sub="all time"              icon={Mail}        color="text-white" />
@@ -338,6 +348,61 @@ export default function AdminDashboard() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ── ADMINS TAB ───────────────────────────────────────────────── */}
+        {activeTab === "admins" && (
+          <div className="space-y-4">
+            {/* Invite new admin */}
+            <div className="bg-commander-surface border border-commander-border rounded-xl p-5">
+              <h2 className="text-white font-black mb-3 flex items-center gap-2"><Shield className="w-4 h-4 text-vellera-blue" /> Invite Admin User</h2>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                  placeholder="email@example.com"
+                  className="flex-1 bg-gray-800 border border-commander-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-vellera-blue transition"
+                />
+                <button
+                  disabled={!inviteEmail.trim() || inviting}
+                  onClick={async () => {
+                    setInviting(true);
+                    try {
+                      await base44.users.inviteUser(inviteEmail.trim(), "admin");
+                      toast.success(`Admin invite sent to ${inviteEmail}`);
+                      setInviteEmail("");
+                      await loadAll();
+                    } catch (e) {
+                      toast.error(e.message);
+                    } finally { setInviting(false); }
+                  }}
+                  className="px-4 py-2.5 bg-vellera-blue text-black font-bold text-sm rounded-xl hover:opacity-90 transition disabled:opacity-40 flex items-center gap-2"
+                >
+                  {inviting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4" />}
+                  Invite
+                </button>
+              </div>
+              <p className="text-xs text-gray-600 mt-2">They'll receive an invitation email and will have full admin access upon joining.</p>
+            </div>
+
+            {/* Current admins */}
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-3">Current Admins</p>
+              {allUsers.filter(u => u.role === "admin").map(u => (
+                <div key={u.id} className="bg-commander-surface border border-vellera-blue/20 rounded-xl p-4 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-vellera-blue/20 border border-vellera-blue/30 rounded-full flex items-center justify-center shrink-0">
+                    <span className="text-vellera-blue font-black text-sm">{(u.full_name || u.email || "?")[0].toUpperCase()}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-bold text-sm">{u.full_name || "—"}</p>
+                    <p className="text-commander-muted text-xs">{u.email}</p>
+                  </div>
+                  <span className="text-xs px-2 py-0.5 bg-vellera-blue/20 text-vellera-blue border border-vellera-blue/30 rounded-full font-bold">admin</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
