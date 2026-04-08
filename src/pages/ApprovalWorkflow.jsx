@@ -208,6 +208,68 @@ function AgentChat() {
   );
 }
 
+const BETA_STATUS_COLORS = {
+  pending:  "bg-yellow-900/40 text-yellow-300 border-yellow-700",
+  approved: "bg-green-900/40 text-green-400 border-green-700",
+  rejected: "bg-red-900/40 text-red-400 border-red-700",
+};
+
+function BetaRequestCard({ req, onUpdate }) {
+  const [notes, setNotes] = useState(req.notes || "");
+  const [acting, setActing] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  const act = async (status) => {
+    setActing(true);
+    await base44.entities.BetaRequest.update(req.id, { status, notes, approved_date: status === "approved" ? new Date().toISOString() : undefined });
+    toast.success(`Request ${status}`);
+    onUpdate();
+    setActing(false);
+  };
+
+  return (
+    <div className={`bg-commander-surface border rounded-xl overflow-hidden ${req.status === "pending" ? "border-yellow-700/30" : "border-commander-border"}`}>
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <p className="text-white font-bold text-sm">{req.full_name}</p>
+              <span className={`text-xs px-2 py-0.5 rounded-full border font-bold uppercase ${BETA_STATUS_COLORS[req.status] || BETA_STATUS_COLORS.pending}`}>{req.status}</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-vellera-blue/10 text-vellera-blue border border-vellera-blue/20 font-bold">{req.primary_goal}</span>
+            </div>
+            <p className="text-gray-500 text-xs">{req.email}</p>
+            <p className="text-gray-400 text-xs mt-1 line-clamp-2">{req.why_interested}</p>
+            <p className="text-gray-600 text-xs mt-1">{new Date(req.created_date || req.requested_date).toLocaleDateString()}</p>
+          </div>
+          <button onClick={() => setExpanded(!expanded)} className="text-gray-500 hover:text-white transition shrink-0">
+            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+      {expanded && (
+        <div className="border-t border-commander-border px-4 pb-4 pt-3 space-y-2">
+          <p className="text-gray-300 text-sm">{req.why_interested}</p>
+          {req.status === "pending" && (
+            <>
+              <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Admin notes (optional)..." rows={2}
+                className="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-vellera-blue resize-none" />
+              <div className="flex gap-2">
+                <button onClick={() => act("approved")} disabled={acting} className="flex-1 py-2 bg-vellera-green/20 border border-vellera-green/40 text-vellera-green text-sm font-bold rounded-lg hover:bg-vellera-green/30 transition flex items-center justify-center gap-2 disabled:opacity-50">
+                  <CheckCircle className="w-4 h-4" /> Approve
+                </button>
+                <button onClick={() => act("rejected")} disabled={acting} className="flex-1 py-2 bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-bold rounded-lg hover:bg-red-900/40 transition flex items-center justify-center gap-2 disabled:opacity-50">
+                  <XCircle className="w-4 h-4" /> Reject
+                </button>
+              </div>
+            </>
+          )}
+          {req.notes && <p className="text-xs text-gray-500 italic">Notes: {req.notes}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ApprovalWorkflow() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -215,10 +277,14 @@ export default function ApprovalWorkflow() {
   const [user, setUser] = useState(null);
   const [creating, setCreating] = useState(false);
   const [newReq, setNewReq] = useState({ title: "", description: "", category: "other", priority: "medium", requester_type: "user" });
+  const [view, setView] = useState("approvals");
+  const [betaRequests, setBetaRequests] = useState([]);
+  const [betaFilter, setBetaFilter] = useState("all");
 
   useEffect(() => {
     base44.auth.me().then(u => setUser(u)).catch(() => {});
     fetchRequests();
+    fetchBetaRequests();
   }, [filter]);
 
   const fetchRequests = async () => {
@@ -226,6 +292,11 @@ export default function ApprovalWorkflow() {
     const all = await base44.entities.ApprovalRequest.list("-created_date", 100);
     setRequests(filter === "all" ? all : all.filter(r => r.status === filter));
     setLoading(false);
+  };
+
+  const fetchBetaRequests = async () => {
+    const all = await base44.entities.BetaRequest.list("-created_date", 500).catch(() => []);
+    setBetaRequests(all);
   };
 
   const createRequest = async () => {
@@ -267,7 +338,24 @@ export default function ApprovalWorkflow() {
           </div>
         </div>
 
-        {/* Stats Row */}
+        {/* View Toggle */}
+        <div className="flex gap-1 bg-commander-surface border border-commander-border rounded-xl p-1 w-fit">
+          <button onClick={() => setView("approvals")}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition ${view === "approvals" ? "bg-vellera-blue text-black" : "text-gray-400 hover:text-white"}`}>
+            Approval Requests
+          </button>
+          <button onClick={() => setView("beta")}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition flex items-center gap-2 ${view === "beta" ? "bg-vellera-blue text-black" : "text-gray-400 hover:text-white"}`}>
+            Beta Access Requests
+            {betaRequests.filter(r => r.status === "pending").length > 0 && (
+              <span className={`text-xs px-1.5 py-0.5 rounded-full font-black ${view === "beta" ? "bg-black/20" : "bg-yellow-900/40 text-yellow-400"}`}>
+                {betaRequests.filter(r => r.status === "pending").length}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {view === "approvals" && (
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-yellow-900/20 border border-yellow-700/30 rounded-xl p-3 text-center">
             <p className="text-2xl font-black text-yellow-400">{pendingCount}</p>
@@ -282,6 +370,24 @@ export default function ApprovalWorkflow() {
             <p className="text-xs text-gray-500">From AI Agent</p>
           </div>
         </div>
+        )}
+
+        {view === "beta" && (
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-yellow-900/20 border border-yellow-700/30 rounded-xl p-3 text-center">
+            <p className="text-2xl font-black text-yellow-400">{betaRequests.filter(r => r.status === "pending").length}</p>
+            <p className="text-xs text-gray-500">Pending</p>
+          </div>
+          <div className="bg-vellera-green/10 border border-vellera-green/20 rounded-xl p-3 text-center">
+            <p className="text-2xl font-black text-vellera-green">{betaRequests.filter(r => r.status === "approved").length}</p>
+            <p className="text-xs text-gray-500">Approved</p>
+          </div>
+          <div className="bg-red-900/20 border border-red-700/30 rounded-xl p-3 text-center">
+            <p className="text-2xl font-black text-red-400">{betaRequests.filter(r => r.status === "rejected").length}</p>
+            <p className="text-xs text-gray-500">Rejected</p>
+          </div>
+        </div>
+        )}
 
         {/* New Request Form */}
         {creating && (
@@ -315,7 +421,34 @@ export default function ApprovalWorkflow() {
           </div>
         )}
 
-        {/* Main layout: requests + agent chat */}
+        {/* ── BETA REQUESTS VIEW ─────────────────────────────────────────── */}
+        {view === "beta" && (
+          <div className="space-y-4">
+            <div className="flex gap-1 bg-commander-surface border border-commander-border rounded-xl p-1">
+              {["all", "pending", "approved", "rejected"].map(f => (
+                <button key={f} onClick={() => setBetaFilter(f)}
+                  className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-bold capitalize transition ${betaFilter === f ? "bg-vellera-blue text-black" : "text-gray-400 hover:text-white"}`}>
+                  {f} {f === "all" ? `(${betaRequests.length})` : `(${betaRequests.filter(r => r.status === f).length})`}
+                </button>
+              ))}
+            </div>
+            {betaRequests.filter(r => betaFilter === "all" || r.status === betaFilter).length === 0 ? (
+              <div className="bg-commander-surface border border-commander-border rounded-xl p-8 text-center">
+                <p className="text-white font-bold">No requests</p>
+                <p className="text-gray-500 text-sm">No beta requests match this filter</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {betaRequests
+                  .filter(r => betaFilter === "all" || r.status === betaFilter)
+                  .map(r => <BetaRequestCard key={r.id} req={r} onUpdate={fetchBetaRequests} />)}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── APPROVAL REQUESTS VIEW ─────────────────────────────────────── */}
+        {view === "approvals" && (
         <div className="grid lg:grid-cols-2 gap-5">
           {/* Requests list */}
           <div className="space-y-4">
@@ -353,6 +486,7 @@ export default function ApprovalWorkflow() {
             <AgentChat />
           </div>
         </div>
+        )}
       </div>
     </div>
   );
