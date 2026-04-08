@@ -44,12 +44,15 @@ export default function BetaRequestForm() {
         body: `Hi ${formData.full_name},\n\nThank you for your interest in Vellera! We've received your beta access request.\n\nWe're reviewing all requests and will email you within 5 business days with a decision.\n\nIn the meantime, you can learn more at vellera.app\n\nBest,\nThe Vellera Team`,
       });
 
-      // Notify admin
-      await base44.integrations.Core.SendEmail({
-        to: "vellera@eds-360.com",
+      // Notify admins
+      const adminNotification = {
         subject: `New Beta Request: ${formData.full_name}`,
         body: `New beta access request received:\n\nName: ${formData.full_name}\nEmail: ${formData.email}\nGoal: ${formData.primary_goal}\n\nWhy interested:\n${formData.why_interested}`,
-      });
+      };
+      await Promise.all([
+        base44.integrations.Core.SendEmail({ to: "vellera@eds-360.com", ...adminNotification }),
+        base44.integrations.Core.SendEmail({ to: "Asaad.morman@eds-360.com", ...adminNotification }),
+      ]);
     } catch (err) {
       toast.error("Failed to submit request: " + err.message);
     } finally {
