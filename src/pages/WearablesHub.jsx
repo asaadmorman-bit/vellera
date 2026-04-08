@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import WearableProviderCard from "../components/WearableProviderCard";
 import WearablesBiometricsChart from "../components/WearablesBiometricsChart";
-import { Activity, RefreshCw, Loader2 } from "lucide-react";
+import { Activity, RefreshCw, Loader2, BarChart3 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const PROVIDERS = ["strava", "fitbit", "polar", "whoop"];
 const SYNC_FNS = { strava: "stravaSync", fitbit: "fitbitSync", polar: "polarSync", whoop: "whoopSync" };
@@ -123,6 +124,18 @@ export default function WearablesHub() {
           ))}
         </div>
       )}
+
+      {/* Analytics Link */}
+      <Link to="/wearable-analytics" className="flex items-center justify-between bg-vellera-blue/10 border border-vellera-blue/30 rounded-xl p-4 hover:bg-vellera-blue/20 transition">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-vellera-blue" />
+          <div>
+            <p className="text-white font-bold text-sm">Deep Analytics</p>
+            <p className="text-vellera-blue text-xs">Recovery vs Training Load · HRV · Sleep trends</p>
+          </div>
+        </div>
+        <span className="text-vellera-blue text-xs font-bold">View →</span>
+      </Link>
 
       {/* Info */}
       <div className="bg-commander-surface border border-commander-border rounded-xl p-4 text-xs text-commander-muted space-y-1">
