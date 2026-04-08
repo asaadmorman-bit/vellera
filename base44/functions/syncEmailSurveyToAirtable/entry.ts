@@ -67,8 +67,10 @@ Deno.serve(async (req) => {
     // Get message IDs from webhook
     const messageIds = body.data?.new_message_ids || [];
 
-    // Get params from request
-    const { baseId, tableId, fromEmailFilter } = body;
+    // Get params from request body or fall back to environment variables
+    const baseId = body.baseId || Deno.env.get('AIRTABLE_BASE_ID');
+    const tableId = body.tableId || Deno.env.get('AIRTABLE_TABLE_ID');
+    const fromEmailFilter = body.fromEmailFilter || Deno.env.get('EMAIL_FILTER');
 
     if (!messageIds.length) {
       return Response.json({ message: 'No new messages to process' });
