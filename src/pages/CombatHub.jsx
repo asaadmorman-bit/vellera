@@ -1,13 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Volume2, VolumeX, Zap, Flame, Grid3x3 } from "lucide-react";
 
 export default function CombatHub() {
   const [anthemPlaying, setAnthemPlaying] = useState(false);
+  const navigate = useNavigate();
 
   const combatCategories = [
     {
       title: "The Strike",
       subtitle: "Boxing / Muay Thai timers & shadowboxing",
+      route: "/training",
       icon: "👊",
       accent: "text-red-400",
       bgAccent: "from-red-500/10 to-orange-600/10",
@@ -16,6 +19,7 @@ export default function CombatHub() {
     {
       title: "The Grind",
       subtitle: "BJJ / Wrestling conditioning",
+      route: "/bjj-journal",
       icon: "🔒",
       accent: "text-orange-400",
       bgAccent: "from-orange-500/10 to-amber-600/10",
@@ -24,6 +28,7 @@ export default function CombatHub() {
     {
       title: "The Mat",
       subtitle: "Combo flows and full circuits",
+      route: "/techniques",
       icon: "⚔️",
       accent: "text-red-500",
       bgAccent: "from-red-600/10 to-red-700/10",
@@ -67,6 +72,7 @@ export default function CombatHub() {
         {combatCategories.map((cat) => (
           <button
             key={cat.title}
+            onClick={() => navigate(cat.route)}
             className={`w-full bg-gradient-to-br ${cat.bgAccent} border ${cat.borderAccent} rounded-xl p-5 text-left hover:border-opacity-100 transition-all group`}
           >
             <div className="flex items-start justify-between">
