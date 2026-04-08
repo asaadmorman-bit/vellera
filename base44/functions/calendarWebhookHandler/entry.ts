@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
           duration_minutes: durationMin,
           notes: `Auto-imported: ${event.summary}`,
           google_event_id: event.id,
-          intensity: 'moderate',
+          intensity: 5,
         });
       }
 
