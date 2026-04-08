@@ -32,26 +32,13 @@ async function getValidToken(tokenRecord, base44) {
   return tokenRecord;
 }
 
-Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
-  const user = await base44.auth.me();
-  // Allow webhook calls without auth, but require email parameter; require auth for direct calls
-  let userEmail = user?.email;
-  if (!userEmail) {
-    const body = await req.json().catch(() => ({}));
-    userEmail = body.user_email;
-    if (!userEmail) {
-      return Response.json({ error: "Unauthorized or missing user_email" }, { status: 401 });
-    }
-  }
-
+async function syncUser(userEmail, base44) {
   const tokens = await base44.asServiceRole.entities.WhoopToken.filter({ user_email: userEmail });
-  if (!tokens.length) return Response.json({ error: "Whoop not connected" }, { status: 400 });
+  if (!tokens.length) return { email: userEmail, error: "No token found" };
 
   let tokenRecord = await getValidToken(tokens[0], base44);
   const headers = { Authorization: `Bearer ${tokenRecord.access_token}` };
 
-  // Fetch last 7 days of cycles (contains recovery + strain)
   const start = new Date(Date.now() - 7 * 86400000).toISOString();
   const [cycleRes, sleepRes] = await Promise.all([
     fetch(`https://api.prod.whoop.com/developer/v1/cycle?start=${start}&limit=25`, { headers }),
@@ -81,7 +68,6 @@ Deno.serve(async (req) => {
     const sleepPerf = sleep?.score?.sleep_performance_percentage ?? null;
     const sleepHours = sleep ? ((sleep.score?.total_sleep_time_milli || 0) / 3600000) : null;
 
-    // Check if we already have a log for this date (scoped to current user)
     const existing = await base44.asServiceRole.entities.BiometricLog.filter({ date, created_by: userEmail });
 
     const payload = {
@@ -98,7 +84,6 @@ Deno.serve(async (req) => {
     if (existing.length > 0) {
       await base44.asServiceRole.entities.BiometricLog.update(existing[0].id, payload);
     } else {
-      // Ensure created_by is set to prevent orphaned records
       await base44.asServiceRole.entities.BiometricLog.create({ ...payload, created_by: userEmail });
     }
     synced.push(date);
@@ -108,5 +93,48 @@ Deno.serve(async (req) => {
     last_synced: new Date().toISOString(),
   });
 
-  return Response.json({ success: true, synced_dates: synced });
+  return { email: userEmail, synced_dates: synced };
+}
+
+Deno.serve(async (req) => {
+  const base44 = createClientFromRequest(req);
+
+  // Try to get a specific user (direct call or webhook)
+  const user = await base44.auth.me().catch(() => null);
+  let userEmail = user?.email;
+
+  if (!userEmail) {
+    const body = await req.json().catch(() => ({}));
+    userEmail = body.user_email;
+  }
+
+  // If a specific user is provided, sync just them
+  if (userEmail) {
+    const tokens = await base44.asServiceRole.entities.WhoopToken.filter({ user_email: userEmail });
+    if (!tokens.length) return Response.json({ error: "Whoop not connected" }, { status: 400 });
+    const result = await syncUser(userEmail, base44);
+    return Response.json({ success: true, results: [result] });
+  }
+
+  // Scheduled job: sync ALL connected users
+  console.log("[whoopSync] Running as scheduled job — syncing all connected users");
+  const allTokens = await base44.asServiceRole.entities.WhoopToken.list();
+  if (!allTokens.length) {
+    console.log("[whoopSync] No WHOOP tokens found, nothing to sync");
+    return Response.json({ success: true, message: "No connected users", results: [] });
+  }
+
+  const results = [];
+  for (const token of allTokens) {
+    try {
+      const result = await syncUser(token.user_email, base44);
+      console.log(`[whoopSync] Synced ${token.user_email}:`, result.synced_dates?.length, "dates");
+      results.push(result);
+    } catch (err) {
+      console.error(`[whoopSync] Failed for ${token.user_email}:`, err.message);
+      results.push({ email: token.user_email, error: err.message });
+    }
+  }
+
+  return Response.json({ success: true, results });
 });
