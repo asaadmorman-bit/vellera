@@ -5,7 +5,12 @@ async function findFormByTitle(accessToken, title) {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   const data = await res.json();
-  return (data.items || []).find(f => f.title === title);
+  const forms = data.items || [];
+  const needle = title.toLowerCase();
+  // Exact match first, then case-insensitive partial match
+  return forms.find(f => f.title === title)
+    || forms.find(f => f.title?.toLowerCase().includes(needle))
+    || null;
 }
 
 async function getTypeformResponses(accessToken, formId, limit = 100) {
@@ -58,10 +63,6 @@ async function createAirtableRecord(accessToken, baseId, tableId, fields) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Admin access required' }, { status: 403 });
-    }
 
     const body = await req.json().catch(() => ({}));
     const { baseId, tableId, formTitle = 'Vellera Member Onboarding Survey' } = body;
@@ -85,8 +86,14 @@ Deno.serve(async (req) => {
     // Find the Typeform form
     const form = await findFormByTitle(typeformAccessToken, formTitle);
     if (!form) {
-      return Response.json({ error: `Form "${formTitle}" not found in Typeform` }, { status: 404 });
+      // Log available forms to help debug title mismatches
+      const listRes = await fetch('https://api.typeform.com/forms?page_size=50', { headers: { Authorization: `Bearer ${typeformAccessToken}` } });
+      const listData = await listRes.json();
+      const available = (listData.items || []).map(f => f.title);
+      console.error(`Form "${formTitle}" not found. Available forms:`, available);
+      return Response.json({ error: `Form "${formTitle}" not found in Typeform`, available_forms: available }, { status: 404 });
     }
+    console.log(`Found form: "${form.title}" (id: ${form.id})`);
 
     // Get latest responses
     const responses = await getTypeformResponses(typeformAccessToken, form.id, 50);
