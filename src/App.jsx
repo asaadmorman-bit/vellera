@@ -182,6 +182,7 @@ const AuthenticatedApp = () => {
       <Route path="/analyze" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><AnalyzeTechnique /></Suspense></PageTransition>} />
       <Route path="/squads" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><TrainingSquads /></Suspense></PageTransition>} />
       <Route path="/wearables" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><WearablesHub /></Suspense></PageTransition>} />
+      <Route path="/combat" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><CombatHub /></Suspense></PageTransition>} />
       <Route path="/calendar" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><TrainingCalendar /></Suspense></PageTransition>} />
       <Route path="/mastery-map" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><MasteryMap /></Suspense></PageTransition>} />
       <Route path="/prep" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><PreWorkoutPrep /></Suspense></PageTransition>} />
