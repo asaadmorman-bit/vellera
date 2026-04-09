@@ -21,8 +21,11 @@ async function getTypeformResponses(accessToken, formId, limit = 100) {
 }
 
 async function getAirtableRecordByResponseId(accessToken, baseId, tableId, responseId) {
+  // Sanitize response_id — prevent Airtable formula injection via crafted response IDs
+  const safeResponseId = String(responseId).replace(/["\\]/g, '');
+  const encodedFormula = encodeURIComponent(`{Typeform Response ID}="${safeResponseId}"`);
   const res = await fetch(
-    `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={Typeform Response ID}="${responseId}"`,
+    `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodedFormula}`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
   );
   const data = await res.json();

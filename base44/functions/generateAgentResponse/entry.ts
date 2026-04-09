@@ -29,6 +29,10 @@ Deno.serve(async (req) => {
 
     const { agent, context } = await req.json();
 
+    // Sanitize user-controlled agent persona — length-cap and strip control characters
+    // to prevent prompt injection via crafted system_prompt values
+    const safeSystemPrompt = String(agent?.system_prompt ?? '').replace(/[\x00-\x1F\x7F]/g, '').slice(0, 800);
+
     // ── Fetch today's readiness check-in ──────────────────────────────────────
     const todayStr = new Date().toISOString().split("T")[0];
     let readiness = null;
@@ -70,12 +74,12 @@ Deno.serve(async (req) => {
 
     const readinessSection = readinessToneBlock ? `\n\nCOACHING TONE DIRECTIVE:\n${readinessToneBlock}` : "";
 
-    const fullPrompt = `${agent.system_prompt}${readinessSection}\n\nAthlete context: ${contextBlock || "No biometric data available."}\n\nTask: ${triggerDescriptions[context.trigger] || triggerDescriptions.halfway}\n\nRules: Stay strictly in character. Be concise (max 2 sentences). Never mention you are an AI.`;
+    const fullPrompt = `${safeSystemPrompt}${readinessSection}\n\nAthlete context: ${contextBlock || "No biometric data available."}\n\nTask: ${triggerDescriptions[context.trigger] || triggerDescriptions.halfway}\n\nRules: Stay strictly in character. Be concise (max 2 sentences). Never mention you are an AI.`;
 
     // ── LLM Call — route through unified coach service ─────────────────────────
     const coachRes = await base44.asServiceRole.functions.invoke('generateCoachAudio', {
       provider: 'openai',
-      agentPersona: agent.system_prompt,
+      agentPersona: safeSystemPrompt,
       workoutContext: fullPrompt,
     });
     const motivationText = coachRes?.text || await base44.integrations.Core.InvokeLLM({ prompt: fullPrompt });

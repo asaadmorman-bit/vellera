@@ -1,30 +1,50 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+// Standard redirect-based OAuth callback — Google sends GET with code & state as query params
 Deno.serve(async (req) => {
+  const url = new URL(req.url);
+  const code = url.searchParams.get('code');
+  const stateToken = url.searchParams.get('state');
+  const error = url.searchParams.get('error');
+
+  if (error) {
+    return new Response(`<html><body><script>window.close();</script><p>Connection failed: Google denied access.</p></body></html>`, {
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+  }
+
+  if (!code || !stateToken) {
+    return new Response('<html><body><p>Missing code or state</p></body></html>', {
+      headers: { 'Content-Type': 'text/html' }, status: 400,
+    });
+  }
+
   const base44 = createClientFromRequest(req);
-  const body = await req.json().catch(() => ({}));
-  const { code, state: stateToken } = body;
 
-  if (!code || !stateToken) return Response.json({ error: 'Missing code or state' }, { status: 400 });
-
-  // Verify state token and retrieve user email
+  // Verify state token from DB — proves this redirect was initiated by our own start function
   const agents = await base44.asServiceRole.entities.UserAgent.filter({
     state_token: stateToken,
     provider: 'google_fit',
   });
 
   if (agents.length === 0) {
-    return Response.json({ error: 'Invalid or expired state token' }, { status: 401 });
+    console.error('[googleFitOAuthCallback] Invalid state token');
+    return new Response('<html><body><p>Invalid or expired state token</p></body></html>', {
+      headers: { 'Content-Type': 'text/html' }, status: 401,
+    });
   }
 
   const agent = agents[0];
   if (new Date(agent.expires_at) < new Date()) {
-    return Response.json({ error: 'State token expired' }, { status: 401 });
+    await base44.asServiceRole.entities.UserAgent.delete(agent.id);
+    return new Response('<html><body><p>State token expired. Please reconnect.</p></body></html>', {
+      headers: { 'Content-Type': 'text/html' }, status: 401,
+    });
   }
 
   const userEmail = agent.user_email;
 
-  // Clean up used state token
+  // Consume state token immediately — prevents replay
   await base44.asServiceRole.entities.UserAgent.delete(agent.id);
 
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -40,7 +60,12 @@ Deno.serve(async (req) => {
   });
   const tokenData = await tokenRes.json();
 
-  if (!tokenData.access_token) return Response.json({ error: 'Token exchange failed', details: tokenData }, { status: 400 });
+  if (!tokenData.access_token) {
+    console.error('[googleFitOAuthCallback] Token exchange failed:', tokenData.error);
+    return new Response('<html><body><p>Token exchange failed. Please try again.</p></body></html>', {
+      headers: { 'Content-Type': 'text/html' }, status: 400,
+    });
+  }
 
   const existing = await base44.asServiceRole.entities.WearableToken.filter({ provider: 'google_fit', user_email: userEmail });
   const payload = {
@@ -58,7 +83,16 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.WearableToken.create(payload);
   }
 
-  return new Response('<html><body><script>window.close();</script><p>Google Fit connected! You can close this window.</p></body></html>', {
-    headers: { 'Content-Type': 'text/html' },
-  });
+  console.log(`[googleFitOAuthCallback] Connected Google Fit for ${userEmail}`);
+
+  // Scoped postMessage — only talk to the known app origin
+  const appOrigin = 'https://vellera.app';
+  return new Response(
+    `<html><head><title>Connected</title></head><body><script>
+      var target = window.opener || null;
+      if (target) { target.postMessage('google_fit_connected', '${appOrigin}'); window.close(); }
+      else { window.location.href = '/'; }
+    </script><p>Google Fit connected! You can close this window.</p></body></html>`,
+    { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+  );
 });

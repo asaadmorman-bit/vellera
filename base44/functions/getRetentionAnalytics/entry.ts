@@ -1,3 +1,4 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { google } from 'npm:googleapis@118.0.0';
 
 const GA_PROPERTY_ID = Deno.env.get('GA4_PROPERTY_ID'); // Format: "123456789"

@@ -65,7 +65,12 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { recruitEmail, recruitName, typeformData } = body;
 
-    if (!recruitEmail || !typeformData) {
+    // Validate email format and strip newlines — prevents MIME header injection
+    if (!recruitEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(recruitEmail) || /[\r\n]/.test(recruitEmail)) {
+      return Response.json({ error: 'Invalid or missing recruitEmail' }, { status: 400 });
+    }
+
+    if (!typeformData) {
       return Response.json({ error: 'recruitEmail and typeformData required' }, { status: 400 });
     }
 

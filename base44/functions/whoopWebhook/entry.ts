@@ -27,7 +27,9 @@ async function verifyWhoopSignature(body, signature) {
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
     
-    return signature === computedHex;
+    // Constant-time comparison via crypto.subtle.verify — prevents timing attacks
+    const sigBytes = new Uint8Array(signature.match(/.{2}/g)?.map(b => parseInt(b, 16)) || []);
+    return crypto.subtle.verify('HMAC', key, sigBytes, new TextEncoder().encode(body));
   } catch (err) {
     console.error('Signature verification error:', err.message);
     return false;

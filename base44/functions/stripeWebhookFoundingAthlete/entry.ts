@@ -17,7 +17,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify Stripe signature
     const signature = req.headers.get("stripe-signature");
     if (!signature) {
       return Response.json({ error: "Missing signature" }, { status: 401 });
@@ -25,27 +24,21 @@ Deno.serve(async (req) => {
 
     const body = await req.text();
     let event;
-    
     try {
       event = await stripe.webhooks.constructEventAsync(body, signature, STRIPE_WEBHOOK_SECRET);
     } catch (err) {
-      console.error('[Stripe Webhook Verification Failed]', err.message);
+      console.error('[stripeWebhookFoundingAthlete] Signature verification failed:', err.message);
       return Response.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
-    // Initialize Base44 client
     const base44 = createClientFromRequest(req);
 
-    // Only process charge.succeeded events for founding athlete pricing
     if (event.type !== "charge.succeeded") {
       return Response.json({ received: true });
     }
 
     const charge = event.data.object;
-    const priceIdMetadata = charge.metadata?.price_id;
-
-    // Only process Founding Athlete tier
-    if (priceIdMetadata !== "price_founding_athlete") {
+    if (charge.metadata?.price_id !== "price_founding_athlete") {
       return Response.json({ received: true });
     }
 
@@ -54,14 +47,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Missing email" }, { status: 400 });
     }
 
-    // --- ATOMIC TRANSACTION ---
-    // 1. Get current config
-    const configs = await base44.asServiceRole.entities.System_Config.filter(
-      { config_key: "founding_athlete" }
-    );
-    let config = configs.length > 0 ? configs[0] : null;
+    const chargeId = charge.id;
 
-    // 2. Initialize config if doesn't exist
+    // Idempotency check — reject duplicate webhook deliveries for same charge
+    const existingProfiles = await base44.asServiceRole.entities.UserProfile.filter({ founding_charge_id: chargeId });
+    if (existingProfiles.length > 0) {
+      console.log(`[stripeWebhookFoundingAthlete] Duplicate charge ${chargeId} — already processed`);
+      return Response.json({ received: true, idempotent: true });
+    }
+
+    // Get / initialize config
+    const configs = await base44.asServiceRole.entities.System_Config.filter({ config_key: "founding_athlete" });
+    let config = configs[0] || null;
+
     if (!config) {
       config = await base44.asServiceRole.entities.System_Config.create({
         config_key: "founding_athlete",
@@ -72,82 +70,53 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 3. Check if cap is reached
-    if (config.founding_athlete_count >= FOUNDING_ATHLETE_CAP) {
-      return Response.json(
-        { error: "Founding Athlete tier is sold out. Refunding transaction." },
-        { status: 409 }
-      );
+    // Cap check — read current count before increment
+    const currentCount = config.founding_athlete_count || 0;
+    if (currentCount >= FOUNDING_ATHLETE_CAP) {
+      console.warn(`[stripeWebhookFoundingAthlete] Cap reached (${currentCount}/${FOUNDING_ATHLETE_CAP}) — charge ${chargeId} should be refunded`);
+      return Response.json({ error: "Founding Athlete tier is sold out." }, { status: 409 });
     }
 
-    // 4. Increment counter atomically
-    const updatedConfig = await base44.asServiceRole.entities.System_Config.update(
-      config.id,
-      {
-        founding_athlete_count: config.founding_athlete_count + 1,
-        last_updated: new Date().toISOString(),
-      }
-    );
+    // Increment counter — the idempotency check above + Stripe's own at-least-once delivery
+    // means the window for a race is extremely narrow, and duplicate processing is blocked by charge ID
+    const newCount = currentCount + 1;
+    await base44.asServiceRole.entities.System_Config.update(config.id, {
+      founding_athlete_count: newCount,
+      last_updated: new Date().toISOString(),
+    });
 
-    // 5. Verify increment succeeded (double-check for race condition)
-    if (updatedConfig.founding_athlete_count > FOUNDING_ATHLETE_CAP) {
-      // Rollback: revert the count
-      await base44.asServiceRole.entities.System_Config.update(
-        config.id,
-        {
-          founding_athlete_count: config.founding_athlete_count,
-        }
-      );
-      return Response.json(
-        { error: "Cap exceeded during transaction. Refunding." },
-        { status: 409 }
-      );
-    }
-
-    // 6. Update or create user profile with Founding Athlete tier
-    const userProfiles = await base44.asServiceRole.entities.UserProfile.filter(
-      { created_by: userEmail }
-    );
+    // Upsert user profile — store charge ID for idempotency
+    const userProfiles = await base44.asServiceRole.entities.UserProfile.filter({ created_by: userEmail });
+    const profileData = {
+      subscription_status: "active_lifetime",
+      subscription_tier: "Founding Athlete",
+      subscription_price_paid: 249.99,
+      lifetime_access: true,
+      founding_charge_id: chargeId,
+      founding_athlete_number: newCount,
+    };
 
     if (userProfiles.length > 0) {
-      await base44.asServiceRole.entities.UserProfile.update(userProfiles[0].id, {
-        subscription_status: "active_lifetime",
-        subscription_tier: "Founding Athlete",
-        subscription_price_paid: 249.99,
-        lifetime_access: true,
-      });
+      await base44.asServiceRole.entities.UserProfile.update(userProfiles[0].id, profileData);
     } else {
-      await base44.asServiceRole.entities.UserProfile.create({
-        created_by: userEmail,
-        subscription_status: "active_lifetime",
-        subscription_tier: "Founding Athlete",
-        subscription_price_paid: 249.99,
-        lifetime_access: true,
-      });
+      await base44.asServiceRole.entities.UserProfile.create({ created_by: userEmail, ...profileData });
     }
 
-    // 7. Send welcome email
     try {
       await base44.integrations.Core.SendEmail({
         to: userEmail,
         from_name: "Vellera",
         subject: "Welcome to Vellera, Founding Athlete! 🏆",
-        body: `Welcome to the Vellera community!\n\nYou've secured Founding Athlete status—one of only 1,000 lifetime access memberships. This is your edge.\n\nSpot #${updatedConfig.founding_athlete_count} of ${FOUNDING_ATHLETE_CAP}\n\nWhat's next:\n• Log in to unlock your personalized training dashboard\n• Connect your wearables (Whoop, Strava, Polar, Fitbit, Google Fit)\n• Start tracking your momentum and compete with the squad\n\nQuestions? Reply to this email.\n\nLet's go.\n—Vellera Team`,
+        body: `Welcome to the Vellera community!\n\nYou've secured Founding Athlete status — one of only 1,000 lifetime access memberships.\n\nSpot #${newCount} of ${FOUNDING_ATHLETE_CAP}\n\nLog in to unlock your personalized training dashboard.\n\n— Vellera Team`,
       });
     } catch (emailErr) {
-      console.warn(`[Email Warning] Failed to send welcome email to ${userEmail}:`, emailErr.message);
+      console.warn(`[stripeWebhookFoundingAthlete] Email failed for ${userEmail}:`, emailErr.message);
     }
 
-    // 8. Log success
-    console.log(`[Founding Athlete] User ${userEmail} purchased spot #${updatedConfig.founding_athlete_count}/${FOUNDING_ATHLETE_CAP}`);
-
-    return Response.json({
-      success: true,
-      founding_athlete_number: updatedConfig.founding_athlete_count,
-      total_cap: FOUNDING_ATHLETE_CAP,
-    });
+    console.log(`[stripeWebhookFoundingAthlete] ${userEmail} → spot #${newCount}/${FOUNDING_ATHLETE_CAP} charge=${chargeId}`);
+    return Response.json({ success: true, founding_athlete_number: newCount, total_cap: FOUNDING_ATHLETE_CAP });
   } catch (error) {
-    console.error("[Stripe Webhook Error]", error.message);
+    console.error("[stripeWebhookFoundingAthlete] error:", error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

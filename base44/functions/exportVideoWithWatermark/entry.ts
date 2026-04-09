@@ -20,8 +20,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing video_url' }, { status: 400 });
     }
 
+    // video_id is required — skipping it would bypass the ownership check (IDOR)
+    if (!video_id) {
+      return Response.json({ error: 'video_id is required' }, { status: 400 });
+    }
+
     // Ownership check — user must own the video record or be an admin
-    if (video_id) {
+    {
       const videos = await base44.entities.LiftVideo.filter({ id: video_id }).catch(() => []);
       const video = videos[0];
       if (video && video.created_by !== user.email && user.role !== 'admin') {

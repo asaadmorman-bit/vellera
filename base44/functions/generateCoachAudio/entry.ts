@@ -3,8 +3,15 @@ import OpenAI from 'npm:openai@4.47.1';
 import { GoogleGenerativeAI } from 'npm:@google/generative-ai@0.12.0';
 
 // ── Unified System Prompt Template ────────────────────────────────────────────
+// Sanitize: strip control chars and enforce length limits on user-controlled inputs
+function sanitizeInput(s, maxLen = 500) {
+  return String(s ?? '').replace(/[\x00-\x1F\x7F]/g, '').slice(0, maxLen);
+}
+
 function buildPrompt(agentPersona, workoutContext) {
-  return `You are an in-ear audio fitness coach for the Vellera app. Your persona is: ${agentPersona}. The current situation is: ${workoutContext}. Respond with exactly one or two short, punchy sentences that will be converted to speech. Do not use emojis, hashtags, or formatting. Speak directly to the athlete.`;
+  const safePersona = sanitizeInput(agentPersona, 500);
+  const safeContext = sanitizeInput(workoutContext, 1000);
+  return `You are an in-ear audio fitness coach for the Vellera app. Your persona is: ${safePersona}. The current situation is: ${safeContext}. Respond with exactly one or two short, punchy sentences that will be converted to speech. Do not use emojis, hashtags, or formatting. Speak directly to the athlete.`;
 }
 
 // ── Adapter: OpenAI ───────────────────────────────────────────────────────────
