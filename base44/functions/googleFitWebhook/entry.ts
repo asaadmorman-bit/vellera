@@ -197,13 +197,23 @@ async function syncUser(targetEmail, tokenRecord, base44) {
   };
 }
 
+// Constant shared secret stored as GOOGLE_FIT_CRON_SECRET env var.
+// Set this in Dashboard → Settings → Secrets and add it to your scheduler headers.
+const CRON_SECRET = Deno.env.get('GOOGLE_FIT_CRON_SECRET');
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me().catch(() => null);
   const body = await req.json().catch(() => ({}));
 
-  // Scheduled job (no auth): sync all connected users
+  // Scheduled job (no auth): require CRON_SECRET to prevent public mass-sync
   if (!user) {
+    const providedSecret = req.headers.get('x-cron-secret');
+    if (!CRON_SECRET || !providedSecret || providedSecret !== CRON_SECRET) {
+      console.error('[googleFitWebhook] Rejected unauthenticated batch request — missing or invalid x-cron-secret');
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const allTokens = await base44.asServiceRole.entities.WearableToken.filter({ provider: 'google_fit' });
     if (!allTokens.length) {
       console.log('[googleFitWebhook] No Google Fit tokens found, nothing to sync');

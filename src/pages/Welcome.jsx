@@ -1,27 +1,10 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-
-// Placeholder function for intro audio playback
-const playIntroAudio = () => {
-  // TODO: Decode and play 30-second Base64 audio on load
-  // const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  // const audioData = atob(BASE64_AUDIO_STRING);
-  // audioContext.decodeAudioData(audioData, (buffer) => {
-  //   const source = audioContext.createBufferSource();
-  //   source.buffer = buffer;
-  //   source.connect(audioContext.destination);
-  //   source.start(0);
-  // });
-  console.log("Intro audio would play here");
-};
 
 export default function Welcome() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    playIntroAudio();
-  }, []);
+
 
   return (
     <div className="w-full h-screen bg-vellera-dark flex flex-col items-center justify-center p-4 space-y-6">

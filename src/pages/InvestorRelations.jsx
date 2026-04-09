@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { base44 } from "@/api/base44Client";
 import { Zap, Shield, Music, Database, ArrowRight, Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,12 +16,16 @@ export default function InvestorRelations() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      // TODO: Connect to backend email service or CRM
-      console.log("Investor inquiry:", formData);
+      await base44.integrations.Core.SendEmail({
+        to: 'asaad@eds-360.com',
+        from_name: 'Vellera Investor Relations',
+        subject: `Investor Inquiry from ${formData.name} — ${formData.company}`,
+        body: `New investor inquiry:\n\nName: ${formData.name}\nCompany: ${formData.company}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`,
+      });
       toast.success("Thanks! We'll be in touch shortly.");
-      setFormData({ name: "", company: "", email: "", message: "" });
+      setFormData({ name: '', company: '', email: '', message: '' });
     } catch (err) {
-      toast.error("Failed to submit. Please try again.");
+      toast.error('Failed to submit. Please try again.');
     } finally {
       setSubmitting(false);
     }
