@@ -15,6 +15,14 @@ function classifyEvent(title = '', desc = '') {
 Deno.serve(async (req) => {
   try {
     const body = await req.json();
+
+    // Verify this request originates from the base44 automation infrastructure
+    // Legitimate connector automation calls always include the automation metadata wrapper
+    if (!body?.automation?.id) {
+      console.warn('[calendarWebhookHandler] Rejected: missing automation context');
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const base44 = createClientFromRequest(req);
 
     const state = body.data?._provider_meta?.['x-goog-resource-state'];
@@ -42,7 +50,7 @@ Deno.serve(async (req) => {
     }
 
     if (!res.ok) {
-      console.error('Google Calendar webhook fetch error:', await res.text());
+      console.error('[calendarWebhookHandler] Calendar API error:', await res.text());
       return Response.json({ status: 'api_error' });
     }
 
@@ -60,7 +68,6 @@ Deno.serve(async (req) => {
     }
 
     const now = new Date();
-
     for (const event of allItems) {
       if (event.status === 'cancelled') continue;
       const classification = classifyEvent(event.summary, event.description || '');
@@ -74,7 +81,6 @@ Deno.serve(async (req) => {
       const dateOnly = startDate.toISOString().split('T')[0];
       const durationMin = endStr ? Math.round((new Date(endStr) - startDate) / 60000) : 60;
 
-      // Upsert TrainingSession
       const existing = await base44.asServiceRole.entities.TrainingSession.filter({ google_event_id: event.id });
       if (existing.length === 0) {
         await base44.asServiceRole.entities.TrainingSession.create({
@@ -87,7 +93,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Auto-create NutritionPlan if class is in the past
       if (startDate < now) {
         const existingPlan = await base44.asServiceRole.entities.NutritionPlan.filter({ date: dateOnly });
         if (existingPlan.length === 0) {
@@ -102,22 +107,15 @@ Deno.serve(async (req) => {
 
     if (newSyncToken) {
       if (syncRecord) {
-        await base44.asServiceRole.entities.SyncState.update(syncRecord.id, {
-          sync_token: newSyncToken,
-          last_synced: new Date().toISOString(),
-        });
+        await base44.asServiceRole.entities.SyncState.update(syncRecord.id, { sync_token: newSyncToken, last_synced: new Date().toISOString() });
       } else {
-        await base44.asServiceRole.entities.SyncState.create({
-          key: 'gcal_main',
-          sync_token: newSyncToken,
-          last_synced: new Date().toISOString(),
-        });
+        await base44.asServiceRole.entities.SyncState.create({ key: 'gcal_main', sync_token: newSyncToken, last_synced: new Date().toISOString() });
       }
     }
 
     return Response.json({ status: 'ok', processed: allItems.length });
   } catch (error) {
-    console.error('calendarWebhookHandler error:', error);
+    console.error('[calendarWebhookHandler] error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

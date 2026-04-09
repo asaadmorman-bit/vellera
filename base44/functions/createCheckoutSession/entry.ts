@@ -16,22 +16,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('Request method:', req.method);
-    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
-    
-    let body = {};
-    try {
-      const text = await req.text();
-      console.log('Raw body:', text);
-      if (text) {
-        body = JSON.parse(text);
-      }
-    } catch (e) {
-      console.error('Body parse error:', e);
-      return Response.json({ error: 'Failed to parse request body' }, { status: 400 });
-    }
 
-    console.log('Parsed body:', body);
     const { priceId, planType } = body;
     console.log('Checkout for user:', user.email, 'planType:', planType, 'priceId:', priceId);
 

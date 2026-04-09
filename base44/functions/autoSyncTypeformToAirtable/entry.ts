@@ -7,7 +7,6 @@ async function findFormByTitle(accessToken, title) {
   const data = await res.json();
   const forms = data.items || [];
   const needle = title.toLowerCase();
-  // Exact match first, then case-insensitive partial match
   return forms.find(f => f.title === title)
     || forms.find(f => f.title?.toLowerCase().includes(needle))
     || null;
@@ -40,23 +39,13 @@ function parseTypeformResponse(item) {
 }
 
 async function createAirtableRecord(accessToken, baseId, tableId, fields) {
-  const res = await fetch(
-    `https://api.airtable.com/v0/${baseId}/${tableId}`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        records: [{ fields }],
-      }),
-    }
-  );
+  const res = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ records: [{ fields }] }),
+  });
   const data = await res.json();
-  if (data.error) {
-    throw new Error(`Airtable error: ${data.error.message}`);
-  }
+  if (data.error) throw new Error(`Airtable error: ${data.error.message}`);
   return data.records?.[0];
 }
 
@@ -64,17 +53,19 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // Admin-only — prevents unauthorized access to third-party form data
+    const user = await base44.auth.me().catch(() => null);
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const { baseId, tableId, formTitle = 'Vellera Member Onboarding Survey' } = body;
 
     if (!baseId || !tableId) {
-      return Response.json(
-        { error: 'baseId and tableId required' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'baseId and tableId required' }, { status: 400 });
     }
 
-    // Get connectors
     const [typeformToken, airtableToken] = await Promise.all([
       base44.asServiceRole.connectors.getConnection('typeform'),
       base44.asServiceRole.connectors.getConnection('airtable'),
@@ -83,33 +74,23 @@ Deno.serve(async (req) => {
     const typeformAccessToken = typeformToken.accessToken;
     const airtableAccessToken = airtableToken.accessToken;
 
-    // Find the Typeform form
     const form = await findFormByTitle(typeformAccessToken, formTitle);
     if (!form) {
-      // Log available forms to help debug title mismatches
       const listRes = await fetch('https://api.typeform.com/forms?page_size=50', { headers: { Authorization: `Bearer ${typeformAccessToken}` } });
       const listData = await listRes.json();
       const available = (listData.items || []).map(f => f.title);
-      console.error(`Form "${formTitle}" not found. Available forms:`, available);
+      console.error(`[autoSyncTypeformToAirtable] Form "${formTitle}" not found. Available:`, available);
       return Response.json({ error: `Form "${formTitle}" not found in Typeform`, available_forms: available }, { status: 404 });
     }
-    console.log(`Found form: "${form.title}" (id: ${form.id})`);
 
-    // Get latest responses
+    console.log(`[autoSyncTypeformToAirtable] Form: "${form.title}" (${form.id})`);
+
     const responses = await getTypeformResponses(typeformAccessToken, form.id, 50);
-
-    console.log(`Found ${responses.length} Typeform responses. Checking for new records to sync...`);
-
-    let synced = 0;
-    let skipped = 0;
+    let synced = 0, skipped = 0;
 
     for (const item of responses) {
-      // Check if already in Airtable
       const exists = await getAirtableRecordByResponseId(airtableAccessToken, baseId, tableId, item.response_id);
-      if (exists) {
-        skipped++;
-        continue;
-      }
+      if (exists) { skipped++; continue; }
 
       const answers = parseTypeformResponse(item);
       const email = Object.values(answers).find(v => v && v.includes('@')) || '';
@@ -128,31 +109,20 @@ Deno.serve(async (req) => {
         'Typeform Response ID': item.response_id,
         'Submitted At': item.submitted_at,
       };
-
-      // Remove undefined fields
-      Object.keys(fields).forEach(k => {
-        if (fields[k] === undefined) delete fields[k];
-      });
+      Object.keys(fields).forEach(k => { if (fields[k] === undefined) delete fields[k]; });
 
       try {
         await createAirtableRecord(airtableAccessToken, baseId, tableId, fields);
         synced++;
-        console.log(`Synced response ${item.response_id} to Airtable`);
+        console.log(`[autoSyncTypeformToAirtable] Synced ${item.response_id}`);
       } catch (err) {
-        console.error(`Failed to sync ${item.response_id}:`, err.message);
+        console.error(`[autoSyncTypeformToAirtable] Failed ${item.response_id}:`, err.message);
       }
     }
 
-    return Response.json({
-      message: `Sync complete: ${synced} new records synced, ${skipped} already in Airtable`,
-      synced,
-      skipped,
-      formId: form.id,
-      baseId,
-      tableId,
-    });
+    return Response.json({ message: `Sync complete: ${synced} synced, ${skipped} already in Airtable`, synced, skipped, formId: form.id });
   } catch (error) {
-    console.error('autoSyncTypeformToAirtable error:', error);
+    console.error('[autoSyncTypeformToAirtable] error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
