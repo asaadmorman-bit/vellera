@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
 
   console.log(`[stravaOAuthCallback] Connected Strava for ${userEmail}`);
 
-  return new Response('<html><head><title>Connected</title></head><body><script>if(window.opener){window.opener.postMessage("strava_connected","*");window.close();}else{window.location.href="/";}</script><p>Strava connected! You can close this window.</p></body></html>', {
+  return new Response('<html><head><title>Connected</title></head><body><script>if(window.opener){window.opener.postMessage("strava_connected","*");}window.close();</script><p style="font-family:sans-serif;padding:2rem">✅ Strava connected! You can close this tab and return to the app.</p></body></html>', {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
 });

@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
 
   console.log(`[polarOAuthCallback] Connected Polar for ${userEmail}`);
 
-  return new Response('<html><head><title>Connected</title></head><body><script>if(window.opener){window.opener.postMessage("polar_connected","*");window.close();}else{window.location.href="/";}</script><p>Polar connected! You can close this window.</p></body></html>', {
+  return new Response('<html><head><title>Connected</title></head><body><script>if(window.opener){window.opener.postMessage("polar_connected","*");}window.close();</script><p style="font-family:sans-serif;padding:2rem">✅ Polar connected! You can close this tab and return to the app.</p></body></html>', {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
 });

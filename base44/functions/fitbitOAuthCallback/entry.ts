@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
 
   console.log(`[fitbitOAuthCallback] Connected Fitbit for ${userEmail}`);
 
-  return new Response('<html><head><title>Connected</title></head><body><script>if(window.opener){window.opener.postMessage("fitbit_connected","*");window.close();}else{window.location.href="/";}</script><p>Fitbit connected! You can close this window.</p></body></html>', {
+  return new Response('<html><head><title>Connected</title></head><body><script>if(window.opener){window.opener.postMessage("fitbit_connected","*");}window.close();</script><p style="font-family:sans-serif;padding:2rem">✅ Fitbit connected! You can close this tab and return to the app.</p></body></html>', {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
 });

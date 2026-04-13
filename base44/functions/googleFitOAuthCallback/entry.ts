@@ -85,14 +85,10 @@ Deno.serve(async (req) => {
 
   console.log(`[googleFitOAuthCallback] Connected Google Fit for ${userEmail}`);
 
-  // Scoped postMessage — only talk to the known app origin
-  const appOrigin = 'https://vellera.app';
   return new Response(
     `<html><head><title>Connected</title></head><body><script>
-      var target = window.opener || null;
-      if (target) { target.postMessage('google_fit_connected', '${appOrigin}'); window.close(); }
-      else { window.location.href = '/'; }
-    </script><p>Google Fit connected! You can close this window.</p></body></html>`,
+      if (window.opener) { window.opener.postMessage('google_fit_connected', '*'); } window.close();
+    </script><p style="font-family:sans-serif;padding:2rem">✅ Google Fit connected! You can close this tab and return to the app.</p></body></html>`,
     { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
   );
 });
