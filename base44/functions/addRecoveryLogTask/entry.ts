@@ -9,7 +9,14 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(TASKS_CONNECTOR_ID);
+    let connection;
+    try {
+      connection = await base44.asServiceRole.connectors.getCurrentAppUserConnection(TASKS_CONNECTOR_ID);
+    } catch (connErr) {
+      console.error('[addRecoveryLogTask] Google Tasks not connected:', connErr.message);
+      return Response.json({ error: 'Google Tasks is not connected. Please connect it first in Settings.' }, { status: 400 });
+    }
+    const { accessToken } = connection;
     const authHeader = { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
 
     // Find or create the "Vellera Recovery Logs" task list
