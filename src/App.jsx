@@ -108,6 +108,7 @@ const WearableAnalytics = lazy(() => import('./pages/WearableAnalytics'));
 const ApprovalWorkflow = lazy(() => import('./pages/ApprovalWorkflow'));
 const InsightsDashboard = lazy(() => import('./pages/InsightsDashboard'));
 const ManualDataLogger = lazy(() => import('./pages/ManualDataLogger'));
+const WellnessDashboard = lazy(() => import('./pages/WellnessDashboard'));
 // Add page imports here
 
 const PublicApp = () => (
@@ -241,6 +242,7 @@ const AuthenticatedApp = () => {
       <Route path="/approvals" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ApprovalWorkflow /></Suspense></PageTransition>} />
       <Route path="/insights" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><InsightsDashboard /></Suspense></PageTransition>} />
       <Route path="/manual-log" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ManualDataLogger /></Suspense></PageTransition>} />
+      <Route path="/wellness-dashboard" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><WellnessDashboard /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
