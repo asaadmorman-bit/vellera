@@ -100,17 +100,6 @@ export default function WearablesHub() {
         </div>
       </div>
 
-      {/* Universal Biometric Dashboard */}
-      <div className="rounded-xl overflow-hidden border border-commander-border">
-        <iframe
-          src="https://untitled-app-da2c66fa.base44.app/UniversalDashboard?app=vellera"
-          width="100%"
-          height="900"
-          style={{ border: "none", borderRadius: "16px" }}
-          title="Vellera Biometric Dashboard"
-        />
-      </div>
-
       {/* Biometrics Trend Chart */}
       <WearablesBiometricsChart />
 
