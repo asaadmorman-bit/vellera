@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 
 const C = {
   bg:"#0a0e1a", card:"#111827", border:"#1f2937",
@@ -72,6 +73,19 @@ function MCard({ label, value, unit, color, icon, tdata, trend }) {
 export default function WellnessDashboard() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [addingTask, setAddingTask] = useState(false);
+
+  const handleAddRecoveryTask = async () => {
+    setAddingTask(true);
+    try {
+      await base44.functions.invoke("addRecoveryLogTask", {});
+      toast.success("Recovery log task added to Google Tasks!");
+    } catch (e) {
+      toast.error("Failed to add task — make sure Google Tasks is connected.");
+    } finally {
+      setAddingTask(false);
+    }
+  };
 
   useEffect(() => {
     base44.entities.BiometricLog.list("-date", 30)
@@ -109,11 +123,20 @@ export default function WellnessDashboard() {
             {latest&&<> · Last sync: <strong style={{color:C.text}}>{latest.date}</strong></>}
           </div>
         </div>
-        {latest&&(
-          <div style={{background:alertStyle.bg,border:`1px solid ${alertStyle.border}`,borderRadius:10,padding:"10px 16px",color:alertStyle.text,fontSize:13,fontWeight:600}}>
-            {alertStyle.label}
-          </div>
-        )}
+        <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+          {latest&&(
+            <div style={{flex:1,background:alertStyle.bg,border:`1px solid ${alertStyle.border}`,borderRadius:10,padding:"10px 16px",color:alertStyle.text,fontSize:13,fontWeight:600}}>
+              {alertStyle.label}
+            </div>
+          )}
+          <button
+            onClick={handleAddRecoveryTask}
+            disabled={addingTask}
+            style={{background:"#1d4ed8",border:"none",borderRadius:10,padding:"10px 16px",color:"#fff",fontSize:13,fontWeight:700,cursor:addingTask?"not-allowed":"pointer",opacity:addingTask?0.6:1,whiteSpace:"nowrap"}}
+          >
+            {addingTask ? "Adding…" : "➕ Add to Google Tasks"}
+          </button>
+        </div>
       </div>
 
       <div style={{padding:"20px 24px",display:"flex",flexDirection:"column",gap:20}}>
