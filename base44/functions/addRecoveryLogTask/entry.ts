@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const TASKS_CONNECTOR_ID = '69e7a7a3999dc807bcd3b944';
 const RECOVERY_LIST_TITLE = 'Vellera Recovery Logs';
 
 Deno.serve(async (req) => {
@@ -9,18 +8,26 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    let connection;
+    // Use the shared Google Calendar connector (already authorized, same Google OAuth)
+    let accessToken;
     try {
-      connection = await base44.asServiceRole.connectors.getCurrentAppUserConnection(TASKS_CONNECTOR_ID);
-    } catch (connErr) {
-      console.error('[addRecoveryLogTask] Google Tasks not connected:', connErr.message);
-      return Response.json({ error: 'Google Tasks is not connected. Please connect it first in Settings.' }, { status: 400 });
+      const conn = await base44.asServiceRole.connectors.getConnection('googlecalendar');
+      accessToken = conn.accessToken;
+    } catch (e) {
+      console.error('[addRecoveryLogTask] Connector not available:', e.message);
+      return Response.json({ error: 'Google connector not available.' }, { status: 400 });
     }
-    const { accessToken } = connection;
+
     const authHeader = { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
 
     // Find or create the "Vellera Recovery Logs" task list
     const listsRes = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', { headers: authHeader });
+    if (!listsRes.ok) {
+      const err = await listsRes.text();
+      console.error('[addRecoveryLogTask] Lists fetch failed:', listsRes.status, err);
+      return Response.json({ error: 'Google Tasks API unavailable. Ensure Tasks scope is authorized.' }, { status: 400 });
+    }
+
     const listsData = await listsRes.json();
     const lists = listsData.items || [];
 
@@ -36,13 +43,13 @@ Deno.serve(async (req) => {
     }
 
     const today = new Date();
-    const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+    const dateStr = today.toISOString().split('T')[0];
     const due = new Date(today);
     due.setHours(23, 59, 0, 0);
 
     const taskBody = {
       title: `📊 Log Recovery Data — ${dateStr}`,
-      notes: `Daily biometric check-in for Vellera.\n\nLog: HRV, Recovery %, Sleep Performance, Resting HR, Strain.\n\nGo to: vellera.app/wellness-dashboard`,
+      notes: `Daily biometric check-in for Vellera.\n\nLog: HRV, Recovery %, Sleep Performance, Resting HR, Strain.\n\nOpen: /wellness-dashboard`,
       due: due.toISOString(),
     };
 
@@ -54,7 +61,7 @@ Deno.serve(async (req) => {
     if (!createTaskRes.ok) {
       const err = await createTaskRes.text();
       console.error('[addRecoveryLogTask] Failed to create task:', err);
-      return Response.json({ error: 'Failed to create task' }, { status: 500 });
+      return Response.json({ error: 'Failed to create task in Google Tasks.' }, { status: 500 });
     }
 
     const task = await createTaskRes.json();
