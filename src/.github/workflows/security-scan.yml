@@ -53,12 +53,9 @@ jobs:
 
       - name: Check for critical vulnerabilities 🧐
         run: |
-          # Install jq if needed (usually present on ubuntu-latest)
-          # sudo apt-get update && sudo apt-get install -y jq
-
           if [ ! -s scan-results.json ]; then
             echo "⚠️ Scan results file is empty or not found."
-            exit 0 # Or exit 1 if an empty file is an error
+            exit 0
           fi
 
           CRITICAL_COUNT=$(jq '.vulnerabilities | map(select(.severity=="error")) | length' scan-results.json)
@@ -70,6 +67,34 @@ jobs:
           else
             echo "✅ No critical vulnerabilities found"
           fi
+
+      - name: NPM Dependency Audit 🔍
+        run: |
+          echo "Running npm audit..."
+          npm audit --audit-level=high || true
+          
+          # Generate detailed audit report
+          npm audit --json > npm-audit-report.json || true
+          
+          # Count HIGH severity issues
+          HIGH_COUNT=$(jq '[.vulnerabilities[] | select(.severity=="high")] | length' npm-audit-report.json 2>/dev/null || echo 0)
+          CRITICAL_COUNT=$(jq '[.vulnerabilities[] | select(.severity=="critical")] | length' npm-audit-report.json 2>/dev/null || echo 0)
+          
+          echo "📊 npm audit results: $CRITICAL_COUNT critical, $HIGH_COUNT high"
+          
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "❌ CRITICAL npm vulnerabilities detected!"
+            jq '.vulnerabilities[] | select(.severity=="critical")' npm-audit-report.json
+            exit 1
+          fi
+
+      - name: Upload npm Audit Report 📄
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+          retention-days: 30
 
       - name: Upload scan results 📄
         uses: actions/upload-artifact@v4
