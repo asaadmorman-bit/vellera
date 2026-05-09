@@ -1,11 +1,3 @@
-# Security scanning workflow powered by Rafter
-#
-# SETUP REQUIRED:
-# 1. Go to your GitHub repo → Settings → Secrets and variables → Actions
-# 2. Click "New repository secret"
-#    Name:  RAFTER_API_KEY
-#    Value: (your Rafter API key)
-
 name: Security Scan with Rafter
 
 on:
@@ -21,63 +13,52 @@ jobs:
 
       - name: Run security scan 🛡️
         env:
+          # Use secrets for your API key
           RAFTER_API_KEY: ${{ secrets.RAFTER_API_KEY }}
         run: |
-          set -euo pipefail
+            set -euo pipefail
 
-          # 1. Trigger scan
-          SCAN_ID=$(curl -fsS -X POST \
-            -H "Content-Type: application/json" \
-            -H "x-api-key: $RAFTER_API_KEY" \
-            -d '{
-              "repository_name": "${{ github.repository }}",
-              "branch_name": "${{ github.ref_name }}",
-              "scan_mode": "fast"
-            }' \
-            https://rafter.so/api/static/scan | jq -r '.scan_id')
+            # 1. Trigger scan
+            SCAN_ID=$(curl -fsS -X POST               -H "Content-Type: application/json"               -H "x-api-key: ${{ secrets.RAFTER_API_KEY }}"               -d '{                "repository_name": "${{ github.repository }}",                "branch_name": "${{ github.ref_name }}",                "scan_mode": "fast"              }'               https://rafter.so/api/static/scan | jq -r '.scan_id')
 
-          echo "SCAN_ID: $SCAN_ID"
+            echo "SCAN_ID: $SCAN_ID"
 
-          # 2. Poll for completion — max 10 minutes (60 × 10s)
-          MAX_POLLS=60
-          POLL_COUNT=0
-          STATUS=""
-          while [ $POLL_COUNT -lt $MAX_POLLS ]; do
-            STATUS=$(curl -fsS \
-              -H "x-api-key: $RAFTER_API_KEY" \
-              "https://rafter.so/api/static/scan?scan_id=$SCAN_ID" | jq -r '.status')
+            # 2. Wait for completion (polling), for a maximum of 10 minutes (60 loops × 10s = 600s = 10m)
+            MAX_POLLS=60
+            POLL_COUNT=0
+            while [ $POLL_COUNT -lt $MAX_POLLS ]; do
+              STATUS=$(curl -fsS -H "x-api-key: ${{ secrets.RAFTER_API_KEY }}"                 "https://rafter.so/api/static/scan?scan_id=$SCAN_ID" | jq -r '.status')
+              
+              if [ "$STATUS" = "completed" ] || [ "$STATUS" = "failed" ]; then
+                break
+              fi
+              
+              echo "Scan status: $STATUS (poll $((POLL_COUNT+1)) of $MAX_POLLS)"
+              sleep 10
+              POLL_COUNT=$((POLL_COUNT+1))
+            done
 
-            if [ "$STATUS" = "completed" ] || [ "$STATUS" = "failed" ]; then
-              break
+            if [ "$STATUS" = "failed" ]; then
+              echo "❌ Scan failed. Please try again."
+              exit 1
+            elif [ "$STATUS" != "completed" ]; then
+              echo "❌ Scan did not complete within 10 minutes."
+              exit 1
             fi
 
-            echo "Scan status: $STATUS (poll $((POLL_COUNT+1)) of $MAX_POLLS)"
-            sleep 10
-            POLL_COUNT=$((POLL_COUNT+1))
-          done
+            # 3. Get results
+            curl -fsS -H "x-api-key: ${{ secrets.RAFTER_API_KEY }}"               "https://rafter.so/api/static/scan?scan_id=$SCAN_ID" > scan-results.json
 
-          if [ "$STATUS" = "failed" ]; then
-            echo "❌ Scan failed. Please try again."
-            exit 1
-          elif [ "$STATUS" != "completed" ]; then
-            echo "❌ Scan did not complete within 10 minutes."
-            exit 1
-          fi
-
-          # 3. Fetch results in JSON and Markdown formats
-          curl -fsS \
-            -H "x-api-key: $RAFTER_API_KEY" \
-            "https://rafter.so/api/static/scan?scan_id=$SCAN_ID" > scan-results.json
-
-          curl -fsS \
-            -H "x-api-key: $RAFTER_API_KEY" \
-            "https://rafter.so/api/static/scan?scan_id=$SCAN_ID&format=md" > scan-results.md
+            curl -fsS -H "x-api-key: ${{ secrets.RAFTER_API_KEY }}"               "https://rafter.so/api/static/scan?scan_id=$SCAN_ID&format=md" > scan-results.md
 
       - name: Check for critical vulnerabilities 🧐
         run: |
+          # Install jq if needed (usually present on ubuntu-latest)
+          # sudo apt-get update && sudo apt-get install -y jq
+
           if [ ! -s scan-results.json ]; then
             echo "⚠️ Scan results file is empty or not found."
-            exit 0
+            exit 0 # Or exit 1 if an empty file is an error
           fi
 
           CRITICAL_COUNT=$(jq '.vulnerabilities | map(select(.severity=="error")) | length' scan-results.json)
@@ -92,10 +73,10 @@ jobs:
 
       - name: Upload scan results 📄
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always() # Upload results even if vulnerabilities were found
         with:
           name: security-scan-results
-          path: |
+          path: | 
             scan-results.json
             scan-results.md
           retention-days: 30
