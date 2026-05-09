@@ -41,6 +41,11 @@
       "type": "boolean",
       "title": "Trigger on Rest Phase",
       "default": true
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "maxLength": 1000
     }
   },
   "required": [
@@ -48,7 +53,9 @@
     "system_prompt"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "created_by": "{{user.email}}"
+    },
     "read": {
       "$or": [
         {

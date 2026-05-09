@@ -98,6 +98,11 @@
         "clinician"
       ],
       "title": "Created By Role"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "maxLength": 1000
     }
   },
   "required": [

@@ -18,6 +18,11 @@
       "type": "string",
       "format": "date-time",
       "title": "Sent Date"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "maxLength": 1000
     }
   },
   "required": [
@@ -26,7 +31,27 @@
     "message"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "$or": [
+        {
+          "data.squad_id": {
+            "$in": {
+              "collection": "SquadMembership",
+              "field": "data.squad_id",
+              "filter": {
+                "data.user_email": "{{user.email}}",
+                "data.role": "captain"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "read": {
       "$or": [
         {
@@ -39,7 +64,11 @@
         }
       ]
     },
-    "update": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "delete": {
       "user_condition": {
         "role": "admin"

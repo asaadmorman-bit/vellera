@@ -102,6 +102,11 @@
     "injury_notes": {
       "type": "string",
       "title": "Injury / Pain Notes (if any)"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "maxLength": 1000
     }
   },
   "required": [

@@ -83,13 +83,20 @@
       "type": "boolean",
       "title": "Under-Fueling Alert Triggered",
       "default": false
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "maxLength": 1000
     }
   },
   "required": [
     "date"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "created_by": "{{user.email}}"
+    },
     "read": {
       "$or": [
         {

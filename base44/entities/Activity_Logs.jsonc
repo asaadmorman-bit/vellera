@@ -66,6 +66,11 @@
       "title": "Performance Score (0-100)",
       "minimum": 0,
       "maximum": 100
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "maxLength": 1000
     }
   },
   "required": [

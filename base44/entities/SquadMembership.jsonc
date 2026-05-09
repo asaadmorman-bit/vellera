@@ -37,6 +37,11 @@
       "type": "number",
       "title": "Current Streak",
       "default": 0
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "maxLength": 1000
     }
   },
   "required": [
@@ -44,12 +49,25 @@
     "user_email"
   ],
   "rls": {
-    "create": {},
-    "read": {},
+    "create": {
+      "data.user_email": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "update": {
       "$or": [
         {
-          "created_by": "{{user.email}}"
+          "data.user_email": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -61,7 +79,7 @@
     "delete": {
       "$or": [
         {
-          "created_by": "{{user.email}}"
+          "data.user_email": "{{user.email}}"
         },
         {
           "user_condition": {

@@ -54,6 +54,11 @@
       "type": "string",
       "format": "date-time",
       "title": "Analysis Date"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "maxLength": 1000
     }
   },
   "required": [
@@ -61,7 +66,9 @@
     "video_url"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "created_by": "{{user.email}}"
+    },
     "read": {
       "$or": [
         {

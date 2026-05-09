@@ -119,6 +119,11 @@
       ],
       "title": "Assessment Status",
       "default": "draft"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "maxLength": 1000
     }
   },
   "required": [

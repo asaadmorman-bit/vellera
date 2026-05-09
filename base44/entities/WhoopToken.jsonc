@@ -26,17 +26,24 @@
       "type": "string",
       "format": "date-time",
       "title": "Last Synced"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "maxLength": 1000
     }
   },
   "required": [
     "user_email"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "data.user_email": "{{user.email}}"
+    },
     "read": {
       "$or": [
         {
-          "created_by": "{{user.email}}"
+          "data.user_email": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -48,7 +55,7 @@
     "update": {
       "$or": [
         {
-          "created_by": "{{user.email}}"
+          "data.user_email": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -60,7 +67,7 @@
     "delete": {
       "$or": [
         {
-          "created_by": "{{user.email}}"
+          "data.user_email": "{{user.email}}"
         },
         {
           "user_condition": {
