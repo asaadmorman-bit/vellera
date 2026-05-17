@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, CalendarCheck, Loader2, ExternalLink, Check, AlertCircle, Shield, Zap, Battery, Flame, Save, Download } from "lucide-react";
 import { toast } from "sonner";
 
@@ -94,6 +94,7 @@ function addMinutes(datetimeLocal, mins) {
 
 export default function ScheduleDrills() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [templates, setTemplates] = useState([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -112,12 +113,17 @@ export default function ScheduleDrills() {
   const [results, setResults] = useState(null);
   const [intensityMode, setIntensityMode] = useState(null); // "low" | "moderate" | "high" | null
 
-  // Load templates on mount
+  // Load templates on mount & check for template from navigation state
   useEffect(() => {
     const loadTemplates = async () => {
       try {
         const tmpl = await base44.entities.DrillTemplate.list("-is_favorite", 20);
         setTemplates(tmpl);
+
+        // If navigated with a template, load it
+        if (location.state?.template) {
+          handleLoadTemplate(location.state.template);
+        }
       } catch {
         // Silently fail if templates can't load
       } finally {
@@ -125,7 +131,7 @@ export default function ScheduleDrills() {
       }
     };
     loadTemplates();
-  }, []);
+  }, [location.state]);
 
   const addSession = () => {
     const id = Date.now();
@@ -236,12 +242,20 @@ export default function ScheduleDrills() {
             <h1 className="text-white text-xl font-black">Schedule Drill Sessions</h1>
             <p className="text-commander-muted text-xs">Martial arts, EP & tactical drills → Google Calendar</p>
           </div>
-          <button
-            onClick={() => navigate("/ep-tactical")}
-            className="flex items-center gap-1 text-xs bg-amber-900/40 border border-amber-700/50 text-amber-400 font-bold px-3 py-1.5 rounded-lg hover:bg-amber-800/50 transition-all shrink-0"
-          >
-            <Shield className="w-3.5 h-3.5" /> Mastery
-          </button>
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => navigate("/drill-templates")}
+              className="flex items-center gap-1 text-xs bg-vellera-green/20 border border-vellera-green/50 text-vellera-green font-bold px-3 py-1.5 rounded-lg hover:bg-vellera-green/30 transition-all"
+            >
+              📋 Templates
+            </button>
+            <button
+              onClick={() => navigate("/ep-tactical")}
+              className="flex items-center gap-1 text-xs bg-amber-900/40 border border-amber-700/50 text-amber-400 font-bold px-3 py-1.5 rounded-lg hover:bg-amber-800/50 transition-all"
+            >
+              <Shield className="w-3.5 h-3.5" /> Mastery
+            </button>
+          </div>
         </div>
 
         {/* Sessions */}
