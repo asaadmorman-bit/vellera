@@ -22,6 +22,7 @@ import { usePullToRefresh } from "../hooks/usePullToRefresh";
 // import AchievementsWidget from "../components/AchievementsWidget";
 import { Droplets, Flame, Moon, Heart, Zap, ChevronRight } from "lucide-react";
 import MorningReadinessAlert from "../components/MorningReadinessAlert";
+import FuelDeficitWarning from "../components/FuelDeficitWarning";
 import BetaWelcomeModal from "../components/BetaWelcomeModal";
 import { Link } from "react-router-dom";
 
@@ -153,6 +154,7 @@ export default function Dashboard() {
     <div ref={pullRef} className="p-4 space-y-4 max-w-lg mx-auto pb-24 safe-area-top overflow-auto h-screen">
       <BetaWelcomeModal />
       <MorningReadinessAlert />
+      <FuelDeficitWarning />
       {/* Refresh Indicator */}
       {refreshing && (
         <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-40">
