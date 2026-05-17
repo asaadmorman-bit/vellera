@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, TrendingUp, Clock, Dumbbell, Scale } from "lucide-react";
+import { ArrowLeft, TrendingUp, Clock, Dumbbell, Scale, Instagram, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -35,6 +36,9 @@ export default function StatsDashboard() {
   const [masteryTrend, setMasteryTrend] = useState([]);
   const [physiqueTrend, setPhysiqueTrend] = useState([]);
   const [totals, setTotals] = useState({ hours: 0, sessions: 0, mastery: 0, weightDelta: null });
+  const [weeklyBreakdown, setWeeklyBreakdown] = useState({});
+  const [igPosting, setIgPosting] = useState(false);
+  const [igResult, setIgResult] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -113,6 +117,26 @@ export default function StatsDashboard() {
           ? Math.round((sortedPhysique[sortedPhysique.length - 1].weight_lbs - sortedPhysique[0].weight_lbs) * 10) / 10
           : null;
 
+        // Weekly breakdown (last 7 days)
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const weekSessions = sessions.filter(s => s.date && new Date(s.date) >= sevenDaysAgo);
+        const strengthSessions = weekSessions.filter(s => s.session_type === 'Strength' || s.session_type === 'strength').length;
+        const bjjSessions = weekSessions.filter(s => ['BJJ','Combat','Sparring'].includes(s.session_type)).length;
+        const cardioSessions = weekSessions.filter(s => ['Cardio','Conditioning','Run'].includes(s.session_type)).length;
+        const weekHours = Math.round(weekSessions.reduce((sum, s) => sum + (s.duration_minutes || 60), 0) / 60 * 10) / 10;
+        const consistencyScore = Math.min(100, Math.round((weekSessions.length / 5) * 100)); // target 5 sessions/week
+
+        setWeeklyBreakdown({
+          total_sessions: weekSessions.length,
+          training_hours: weekHours,
+          strength_sessions: strengthSessions,
+          bjj_sessions: bjjSessions,
+          cardio_sessions: cardioSessions,
+          consistency_score: consistencyScore,
+          streak_days: 0, // profile would have this
+        });
+
         setTotals({
           hours: Math.round(totalMins / 60),
           sessions: totalSessions,
@@ -128,6 +152,33 @@ export default function StatsDashboard() {
 
     load();
   }, []);
+
+  const handlePostToInstagram = async () => {
+    setIgPosting(true);
+    setIgResult(null);
+    try {
+      const statsPayload = {
+        ...weeklyBreakdown,
+        avg_recovery: null,
+        avg_hrv: null,
+        avg_sleep: null,
+        motivational_quote: 'Forge your best self. One session at a time.',
+        total_volume_lbs: null,
+      };
+      const res = await base44.functions.invoke('postStatsCarousel', { stats: statsPayload });
+      if (res.data?.success) {
+        setIgResult({ success: true, post_id: res.data.post_id });
+        toast.success('Posted to Instagram! 🎉');
+      } else {
+        throw new Error(res.data?.error || 'Unknown error');
+      }
+    } catch (err) {
+      setIgResult({ success: false, error: err.message });
+      toast.error('Instagram post failed: ' + err.message);
+    } finally {
+      setIgPosting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -234,6 +285,47 @@ export default function StatsDashboard() {
             </button>
           </div>
         )}
+      </div>
+
+      {/* Post to Instagram */}
+      <div className="bg-commander-surface border border-commander-border rounded-xl p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Instagram className="w-5 h-5 text-pink-400" />
+          <p className="text-white font-black">Post Weekly Stats to Instagram</p>
+        </div>
+        <p className="text-commander-muted text-xs leading-relaxed">
+          Generate a 4-slide AI-designed carousel with your peak performance stats and publish directly to your Instagram Business account.
+        </p>
+        <div className="bg-gray-800 rounded-lg p-3 text-xs space-y-1">
+          <p className="text-gray-400 font-bold mb-1">This week's stats preview:</p>
+          <p className="text-gray-300">📊 {weeklyBreakdown.total_sessions || 0} sessions · {weeklyBreakdown.training_hours || 0}h · {weeklyBreakdown.consistency_score || 0}% consistency</p>
+          <p className="text-gray-300">💪 Strength: {weeklyBreakdown.strength_sessions || 0} · BJJ: {weeklyBreakdown.bjj_sessions || 0} · Cardio: {weeklyBreakdown.cardio_sessions || 0}</p>
+        </div>
+
+        {igResult?.success && (
+          <div className="flex items-center gap-2 bg-green-900/30 border border-green-700 rounded-lg px-3 py-2">
+            <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />
+            <p className="text-green-300 text-xs">Successfully posted! Post ID: {igResult.post_id}</p>
+          </div>
+        )}
+        {igResult?.success === false && (
+          <div className="flex items-center gap-2 bg-red-900/30 border border-red-700 rounded-lg px-3 py-2">
+            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+            <p className="text-red-300 text-xs">{igResult.error}</p>
+          </div>
+        )}
+
+        <button
+          onClick={handlePostToInstagram}
+          disabled={igPosting}
+          className="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 text-white font-black rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:from-pink-500 hover:to-purple-500 transition-all"
+        >
+          {igPosting ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Generating & Posting...</>
+          ) : (
+            <><Instagram className="w-4 h-4" /> Post Carousel to Instagram</>
+          )}
+        </button>
       </div>
 
       {/* Quick nav */}
