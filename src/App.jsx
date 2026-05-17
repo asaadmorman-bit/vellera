@@ -111,6 +111,7 @@ const ManualDataLogger = lazy(() => import('./pages/ManualDataLogger'));
 const WellnessDashboard = lazy(() => import('./pages/WellnessDashboard'));
 const BodyGoalPlanner = lazy(() => import('./pages/BodyGoalPlanner'));
 const ScheduleDrills = lazy(() => import('./pages/ScheduleDrills'));
+const EPTacticalDashboard = lazy(() => import('./pages/EPTacticalDashboard'));
 // Add page imports here
 
 const PublicApp = () => (

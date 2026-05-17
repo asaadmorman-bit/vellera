@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, CalendarCheck, Loader2, ExternalLink, Check, AlertCircle, Shield } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, CalendarCheck, Loader2, ExternalLink, Check, AlertCircle, Shield, Zap, Battery, Flame } from "lucide-react";
 import { toast } from "sonner";
 
 const DRILL_PRESETS = [
@@ -26,6 +26,58 @@ const DRILL_PRESETS = [
   // ── Custom ────────────────────────────────────────────────────────
   { label: "Custom", duration: 60, description: "", category: "custom" },
 ];
+
+// Intensity level → recommended drill labels (in priority order)
+const INTENSITY_DRILL_MAP = {
+  low: {
+    label: "Low",
+    color: "text-green-400",
+    border: "border-green-700/50",
+    bg: "bg-green-900/20",
+    activeBg: "bg-green-800/40",
+    icon: Battery,
+    description: "Recovery pace — technique over sweat",
+    drills: [
+      "EP — Pistol Draw & Presentation",
+      "EP — Threat Identification & 360° Scan",
+      "EP — Close Protection Movement",
+      "EP — Low-Light / Night Movement",
+      "EP — Defensive Driving Scenarios",
+    ],
+  },
+  moderate: {
+    label: "Moderate",
+    color: "text-amber-400",
+    border: "border-amber-700/50",
+    bg: "bg-amber-900/20",
+    activeBg: "bg-amber-800/40",
+    icon: Zap,
+    description: "Steady work — skill + conditioning blend",
+    drills: [
+      "EP — Pack & Gear Carry Conditioning",
+      "EP — VIP Extraction Footwork",
+      "EP — Combatives: Control & Restraint",
+      "EP — Pistol Draw & Presentation",
+      "EP — Threat Identification & 360° Scan",
+    ],
+  },
+  high: {
+    label: "High",
+    color: "text-red-400",
+    border: "border-red-700/50",
+    bg: "bg-red-900/20",
+    activeBg: "bg-red-800/40",
+    icon: Flame,
+    description: "Full output — stress inoculation & load",
+    drills: [
+      "EP — Stress Inoculation Circuit",
+      "EP — Pack & Gear Carry Conditioning",
+      "EP — Vehicle Ambush Drill",
+      "EP — Combatives: Control & Restraint",
+      "EP — VIP Extraction Footwork",
+    ],
+  },
+};
 
 function getDefaultDatetime(daysFromNow, hour = 18) {
   const d = new Date();
@@ -54,6 +106,7 @@ export default function ScheduleDrills() {
   ]);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
+  const [intensityMode, setIntensityMode] = useState(null); // "low" | "moderate" | "high" | null
 
   const addSession = () => {
     const id = Date.now();
@@ -86,6 +139,26 @@ export default function ScheduleDrills() {
       }
       return updated;
     }));
+  };
+
+  const applyIntensityPlan = (level) => {
+    const plan = INTENSITY_DRILL_MAP[level];
+    if (!plan) return;
+    setIntensityMode(level);
+    // Build sessions from the recommended drills for this intensity
+    const newSessions = plan.drills.map((drillLabel, i) => {
+      const found = DRILL_PRESETS.find(p => p.label === drillLabel);
+      return {
+        id: Date.now() + i,
+        preset: drillLabel,
+        title: drillLabel,
+        description: found?.description || "",
+        startDateTime: getDefaultDatetime(1, 6 + i * 2), // stagger start times
+        duration: found?.duration || 45,
+      };
+    });
+    setSessions(newSessions);
+    toast.success(`Loaded ${plan.label} intensity plan — ${newSessions.length} drills`);
   };
 
   const handleSchedule = async () => {
@@ -123,6 +196,38 @@ export default function ScheduleDrills() {
             <h1 className="text-white text-xl font-black">Schedule Drill Sessions</h1>
             <p className="text-commander-muted text-xs">Martial arts, EP & tactical drills → Google Calendar</p>
           </div>
+        </div>
+
+        {/* Intensity Plan Selector */}
+        <div className="bg-commander-surface border border-commander-border rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-amber-400" />
+            <p className="text-white font-black text-sm">Auto-Load by Intensity</p>
+            <span className="text-xs text-commander-muted">— fills sessions with matched EP drills</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {Object.entries(INTENSITY_DRILL_MAP).map(([key, plan]) => {
+              const Icon = plan.icon;
+              const active = intensityMode === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => applyIntensityPlan(key)}
+                  className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 px-2 transition-all ${plan.border} ${active ? plan.activeBg : plan.bg} hover:opacity-90`}
+                >
+                  <Icon className={`w-5 h-5 ${plan.color}`} />
+                  <span className={`text-xs font-black ${plan.color}`}>{plan.label}</span>
+                  <span className="text-xs text-commander-muted text-center leading-tight hidden sm:block">{plan.description}</span>
+                </button>
+              );
+            })}
+          </div>
+          {intensityMode && (
+            <div className={`rounded-lg px-3 py-2 text-xs ${INTENSITY_DRILL_MAP[intensityMode].bg} border ${INTENSITY_DRILL_MAP[intensityMode].border}`}>
+              <span className={`font-bold ${INTENSITY_DRILL_MAP[intensityMode].color}`}>{INTENSITY_DRILL_MAP[intensityMode].label} Plan: </span>
+              <span className="text-gray-300">{INTENSITY_DRILL_MAP[intensityMode].description} — {INTENSITY_DRILL_MAP[intensityMode].drills.length} drills queued</span>
+            </div>
+          )}
         </div>
 
         {/* Sessions */}
