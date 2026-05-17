@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import BackButton from "../components/BackButton";
 import { Apple, Flame, TrendingDown, AlertTriangle, Plus } from "lucide-react";
+import TacticalFuelStatus from "../components/TacticalFuelStatus";
 
 const COMMON_FOODS = [
   { name: "Chicken Breast (3oz)", calories: 165, protein: 31, carbs: 0, fat: 3.6 },
@@ -214,6 +215,9 @@ export default function MacroTracking() {
           </div>
         </div>
       )}
+
+      {/* Tactical Fuel Status */}
+      <TacticalFuelStatus caloriesToday={current.calories_consumed} date={today} />
 
       {/* Add Food Button */}
       <button

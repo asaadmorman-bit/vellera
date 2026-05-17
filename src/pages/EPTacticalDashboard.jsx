@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shield, ArrowLeft, Plus, CheckCircle2, Circle, ChevronRight, TrendingUp, Target, Zap } from "lucide-react";
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from "recharts";

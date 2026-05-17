@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Camera, Loader2, ChevronDown, ChevronUp, Droplets, TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from "lucide-react";
 import BackButton from "../components/BackButton";
 import FuelTrainingMatrix from "../components/FuelTrainingMatrix";
+import TacticalFuelStatus from "../components/TacticalFuelStatus";
 import { FormError } from "../components/FormValidation";
 import SelectDrawer from "../components/SelectDrawer";
 
@@ -327,6 +328,9 @@ Return JSON with: food_description (string, describe what you see), calories (nu
           </div>
         </div>
       </div>
+
+      {/* Tactical Fuel Status */}
+      <TacticalFuelStatus caloriesToday={totals.calories} date={selectedDate} />
 
       {/* AI Adjustment Engine */}
       <WeeklyAdjustmentEngine weekLogs={weekLogs} athlete={athlete} />

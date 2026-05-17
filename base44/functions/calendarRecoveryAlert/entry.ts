@@ -5,34 +5,86 @@ const TRAINING_KEYWORDS = [
   'bjj', 'jiu-jitsu', 'jiu jitsu', 'drill', 'sparring', 'grappling',
   'striking', 'wrestling', 'martial arts', 'training', 'workout',
   'strength', 'conditioning', 'combat', 'bag work', 'mma', 'boxing',
-  'muay thai', 'kickboxing', 'takedown', 'vellera'
+  'muay thai', 'kickboxing', 'takedown', 'vellera',
+  'ep drill', 'pistol draw', 'ruck', 'extraction', 'tactical', 'stress inoculation'
 ];
+
+// EP/tactical keywords for more specific suggestions
+const EP_KEYWORDS = ['ep drill', 'pistol', 'ruck', 'extraction', 'tactical', 'stress inoculation', 'combative', 'ambush'];
 
 function isTrainingEvent(event) {
   const text = `${event.summary || ''} ${event.description || ''}`.toLowerCase();
   return TRAINING_KEYWORDS.some(kw => text.includes(kw));
 }
 
-function getRecoveryMessage(event) {
+function isEPEvent(event) {
+  const text = `${event.summary || ''} ${event.description || ''}`.toLowerCase();
+  return EP_KEYWORDS.some(kw => text.includes(kw));
+}
+
+const INTENSITY_ZONES = [
+  { min: 0,  max: 33,  label: "Rest / Recovery Only",    icon: "🛑", nextSession: "Rest or passive mobility only. No tactical drills tomorrow." },
+  { min: 34, max: 50,  label: "Technique Only",           icon: "🟡", nextSession: "Dry-fire and slow EP footwork only. No loaded movement or stress circuits." },
+  { min: 51, max: 67,  label: "Moderate Training",        icon: "🟢", nextSession: "Moderate EP session OK — threat scanning, VIP extraction drills. Skip stress inoculation." },
+  { min: 68, max: 84,  label: "Full Training Green",      icon: "⚡", nextSession: "Full EP session cleared. Pistol draw, combatives, and pack carry are all green." },
+  { min: 85, max: 100, label: "Peak Performance Day",     icon: "🏆", nextSession: "Peak output day. Run your most demanding stress inoculation or vehicle ambush circuit." },
+];
+
+function getZone(score) {
+  return INTENSITY_ZONES.find(z => score >= z.min && score <= z.max) || INTENSITY_ZONES[0];
+}
+
+function getRecoveryMessage(event, biometrics) {
   const title = event.summary || 'Training session';
-  const now = new Date();
   const endTime = event.end?.dateTime ? new Date(event.end.dateTime) : null;
   const durationMs = endTime && event.start?.dateTime
     ? endTime - new Date(event.start.dateTime)
     : null;
   const durationMin = durationMs ? Math.round(durationMs / 60000) : null;
+  const ep = isEPEvent(event);
 
-  return [
+  const lines = [
     `✅ ${title} completed${durationMin ? ` (${durationMin} min)` : ''}.`,
     ``,
-    `🔁 Recovery Actions:`,
-    `• Consume 20–40g protein within 30 min`,
-    `• Rehydrate: drink 16–24 oz water now`,
-    `• Light stretching or mobility (10 min)`,
-    `• Log this session in Vellera for tracking`,
-    ``,
-    `💤 Prioritize 7–9 hours of sleep tonight for optimal adaptation.`,
-  ].join('\n');
+  ];
+
+  if (biometrics) {
+    const { recovery_pct, hrv, resting_hr, sleep_performance, body_battery } = biometrics;
+    const zone = recovery_pct != null ? getZone(recovery_pct) : null;
+
+    lines.push(`📊 Your Biometrics Right Now:`);
+    if (recovery_pct != null) lines.push(`• Recovery: ${recovery_pct}%${zone ? ` — ${zone.icon} ${zone.label}` : ''}`);
+    if (hrv != null)           lines.push(`• HRV: ${hrv} ms`);
+    if (resting_hr != null)    lines.push(`• Resting HR: ${resting_hr} bpm`);
+    if (sleep_performance != null) lines.push(`• Sleep Performance: ${sleep_performance}%`);
+    if (body_battery != null)  lines.push(`• Body Battery: ${body_battery}`);
+    lines.push(``);
+
+    if (zone) {
+      lines.push(`🎯 Next Session Recommendation:`);
+      lines.push(`• ${zone.nextSession}`);
+      lines.push(``);
+
+      if (recovery_pct < 50) {
+        lines.push(`⚠️ Low recovery detected. Consider scaling back tomorrow's ${ep ? 'EP/tactical' : 'training'} load.`);
+        lines.push(``);
+      }
+    }
+  }
+
+  lines.push(`🔁 Immediate Recovery Actions:`);
+  lines.push(`• Consume 20–40g protein within 30 min`);
+  lines.push(`• Rehydrate: drink 16–24 oz water now`);
+  if (ep) {
+    lines.push(`• 10 min mobility: hip flexors, shoulders, thoracic spine (critical for EP load bearing)`);
+  } else {
+    lines.push(`• Light stretching or mobility (10 min)`);
+  }
+  lines.push(`• Log this session in Vellera for tracking`);
+  lines.push(``);
+  lines.push(`💤 Prioritize 7–9 hours of sleep tonight for optimal adaptation.`);
+
+  return lines.join('\n');
 }
 
 Deno.serve(async (req) => {
