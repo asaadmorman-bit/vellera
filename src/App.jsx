@@ -110,6 +110,7 @@ const InsightsDashboard = lazy(() => import('./pages/InsightsDashboard'));
 const ManualDataLogger = lazy(() => import('./pages/ManualDataLogger'));
 const WellnessDashboard = lazy(() => import('./pages/WellnessDashboard'));
 const BodyGoalPlanner = lazy(() => import('./pages/BodyGoalPlanner'));
+const ScheduleDrills = lazy(() => import('./pages/ScheduleDrills'));
 // Add page imports here
 
 const PublicApp = () => (
@@ -245,6 +246,7 @@ const AuthenticatedApp = () => {
       <Route path="/manual-log" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ManualDataLogger /></Suspense></PageTransition>} />
       <Route path="/wellness-dashboard" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><WellnessDashboard /></Suspense></PageTransition>} />
       <Route path="/body-goal-planner" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><BodyGoalPlanner /></Suspense></PageTransition>} />
+      <Route path="/schedule-drills" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ScheduleDrills /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
