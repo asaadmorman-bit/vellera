@@ -1,17 +1,30 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, CalendarCheck, Loader2, ExternalLink, Check, AlertCircle } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, CalendarCheck, Loader2, ExternalLink, Check, AlertCircle, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 const DRILL_PRESETS = [
-  { label: "BJJ — Guard Passing", duration: 60, description: "Guard passing drills: knee slice, torreando, leg weave." },
-  { label: "BJJ — Submissions", duration: 75, description: "Submission chains from dominant positions." },
-  { label: "Striking — Heavy Bag", duration: 45, description: "Combo work on the heavy bag: jab-cross-hook, body shots, footwork." },
-  { label: "Takedown Drilling", duration: 60, description: "Shoot / sprawl takedown entries and finishes." },
-  { label: "Positional Sparring", duration: 90, description: "Positional rounds focused on guard retention and escapes." },
-  { label: "Strength & Conditioning", duration: 60, description: "Combat S&C: explosive movements, carries, and conditioning circuits." },
-  { label: "Custom", duration: 60, description: "" },
+  // ── Martial Arts ──────────────────────────────────────────────────
+  { label: "BJJ — Guard Passing", duration: 60, description: "Guard passing drills: knee slice, torreando, leg weave.", category: "bjj" },
+  { label: "BJJ — Submissions", duration: 75, description: "Submission chains from dominant positions.", category: "bjj" },
+  { label: "Striking — Heavy Bag", duration: 45, description: "Combo work on the heavy bag: jab-cross-hook, body shots, footwork.", category: "bjj" },
+  { label: "Takedown Drilling", duration: 60, description: "Shoot / sprawl takedown entries and finishes.", category: "bjj" },
+  { label: "Positional Sparring", duration: 90, description: "Positional rounds focused on guard retention and escapes.", category: "bjj" },
+  { label: "Strength & Conditioning", duration: 60, description: "Combat S&C: explosive movements, carries, and conditioning circuits.", category: "fitness" },
+  // ── Executive Protection / Tactical ───────────────────────────────
+  { label: "EP — Pistol Draw & Presentation", duration: 30, description: "Holster draw drills: compressed ready, high guard, one-hand draw. 50 reps from concealment. Focus on sight alignment and trigger reset.", category: "ep" },
+  { label: "EP — Pack & Gear Carry Conditioning", duration: 45, description: "Rucking intervals with loaded pack (45–65 lbs): 400m fast walk + 100m jog x 6. Builds load-bearing endurance for EP movements.", category: "ep" },
+  { label: "EP — Threat Identification & 360° Scan", duration: 30, description: "Situational awareness circuit: scan drill (target identification in <2 sec), interview stance practice, verbal challenge scenarios. 10 reps each scenario.", category: "ep" },
+  { label: "EP — VIP Extraction Footwork", duration: 45, description: "Protective formation movement: L-shape extraction, vehicle stack, building entry/exit under stress. Practice with partner or solo shadow drill.", category: "ep" },
+  { label: "EP — Combatives: Control & Restraint", duration: 60, description: "EP ground control: standing wrist lock, arm bar escort, rear choke escape, weapon retention. 5x 3-min rounds with partner.", category: "ep" },
+  { label: "EP — Vehicle Ambush Drill", duration: 30, description: "Immediate action on vehicle contact: dismount, react to contact, cover positions, secure principal. Dry run x 10, timed.", category: "ep" },
+  { label: "EP — Low-Light / Night Movement", duration: 30, description: "Flashlight techniques (FBI hold, Rogers hold), movement through structures, clearing corners at night. Builds confidence for low-vis details.", category: "ep" },
+  { label: "EP — Stress Inoculation Circuit", duration: 45, description: "5 rounds: 10 burpees → draw & fire (dry), 100m sprint → threat scan, 20 push-ups → radio communication drill. Simulate elevated HR decision-making.", category: "ep" },
+  { label: "EP — Close Protection Movement", duration: 30, description: "Overwatch positions, principal escort formations (box, diamond, wedge), door-to-vehicle transitions. Shadow drill, 15 min technique + 15 min timed run.", category: "ep" },
+  { label: "EP — Defensive Driving Scenarios", duration: 30, description: "Mental reps + physical conditioning: J-turn footwork, evasive reaction drills, route planning simulation. Pair with core stability work.", category: "ep" },
+  // ── Custom ────────────────────────────────────────────────────────
+  { label: "Custom", duration: 60, description: "", category: "custom" },
 ];
 
 function getDefaultDatetime(daysFromNow, hour = 18) {
@@ -108,7 +121,7 @@ export default function ScheduleDrills() {
           </button>
           <div>
             <h1 className="text-white text-xl font-black">Schedule Drill Sessions</h1>
-            <p className="text-commander-muted text-xs">Add martial arts drills directly to Google Calendar</p>
+            <p className="text-commander-muted text-xs">Martial arts, EP & tactical drills → Google Calendar</p>
           </div>
         </div>
 
@@ -116,7 +129,14 @@ export default function ScheduleDrills() {
         {sessions.map((s, idx) => (
           <div key={s.id} className="bg-commander-surface border border-commander-border rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-white font-bold text-sm">Session {idx + 1}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-white font-bold text-sm">Session {idx + 1}</p>
+                {DRILL_PRESETS.find(p => p.label === s.preset)?.category === "ep" && (
+                  <span className="flex items-center gap-1 text-xs bg-amber-900/40 border border-amber-700/50 text-amber-400 font-bold px-2 py-0.5 rounded-full">
+                    <Shield className="w-3 h-3" /> EP
+                  </span>
+                )}
+              </div>
               {sessions.length > 1 && (
                 <button onClick={() => removeSession(s.id)} className="text-commander-muted hover:text-red-400 transition-colors">
                   <Trash2 className="w-4 h-4" />
@@ -132,9 +152,26 @@ export default function ScheduleDrills() {
                 onChange={e => updateSession(s.id, "preset", e.target.value)}
                 className="w-full bg-gray-800 border border-commander-border rounded-lg px-3 py-2 text-white text-sm"
               >
-                {DRILL_PRESETS.map(p => (
-                  <option key={p.label} value={p.label}>{p.label} ({p.duration} min)</option>
-                ))}
+                <optgroup label="── Martial Arts">
+                  {DRILL_PRESETS.filter(p => p.category === "bjj").map(p => (
+                    <option key={p.label} value={p.label}>{p.label} ({p.duration} min)</option>
+                  ))}
+                </optgroup>
+                <optgroup label="── Fitness">
+                  {DRILL_PRESETS.filter(p => p.category === "fitness").map(p => (
+                    <option key={p.label} value={p.label}>{p.label} ({p.duration} min)</option>
+                  ))}
+                </optgroup>
+                <optgroup label="🛡️ Executive Protection / Tactical">
+                  {DRILL_PRESETS.filter(p => p.category === "ep").map(p => (
+                    <option key={p.label} value={p.label}>{p.label} ({p.duration} min)</option>
+                  ))}
+                </optgroup>
+                <optgroup label="── Other">
+                  {DRILL_PRESETS.filter(p => p.category === "custom").map(p => (
+                    <option key={p.label} value={p.label}>{p.label}</option>
+                  ))}
+                </optgroup>
               </select>
             </div>
 
