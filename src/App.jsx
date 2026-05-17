@@ -112,6 +112,7 @@ const WellnessDashboard = lazy(() => import('./pages/WellnessDashboard'));
 const BodyGoalPlanner = lazy(() => import('./pages/BodyGoalPlanner'));
 const ScheduleDrills = lazy(() => import('./pages/ScheduleDrills'));
 const DrillTemplates = lazy(() => import('./pages/DrillTemplates'));
+const MonthlyReport = lazy(() => import('./pages/MonthlyReport'));
 const EPTacticalDashboard = lazy(() => import('./pages/EPTacticalDashboard'));
 // Add page imports here
 
@@ -250,6 +251,7 @@ const AuthenticatedApp = () => {
       <Route path="/body-goal-planner" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><BodyGoalPlanner /></Suspense></PageTransition>} />
       <Route path="/schedule-drills" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><ScheduleDrills /></Suspense></PageTransition>} />
       <Route path="/drill-templates" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><DrillTemplates /></Suspense></PageTransition>} />
+      <Route path="/monthly-report" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><MonthlyReport /></Suspense></PageTransition>} />
       <Route path="/ep-tactical" element={<PageTransition><Suspense fallback={<LoadingSpinner />}><EPTacticalDashboard /></Suspense></PageTransition>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
