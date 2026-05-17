@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import BackButton from "../components/BackButton";
 import InjuryPatternAnalytics from "../components/InjuryPatternAnalytics";
+import RecoveryAlertsPanel from "../components/RecoveryAlertsPanel";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Play, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -202,6 +203,9 @@ export default function Recovery() {
           </ResponsiveContainer>
         </div>
       )}
+
+      {/* Auto Recovery Alerts from Google Calendar */}
+      <RecoveryAlertsPanel />
 
       {/* Injury Pattern Analytics */}
       <InjuryPatternAnalytics />
