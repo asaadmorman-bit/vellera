@@ -9,7 +9,7 @@ const api = axios.create({
   },
 });
 
-// Interceptor to attach JWT auth tokens for secure endpoints
+// Automatically append Auth tokens if stored in localStorage
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('vellera_auth_token');
   if (token && config.headers) {
@@ -18,33 +18,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export interface BiometricData {
-  weight: number;
-  heartRate: number;
-  caloriesIn: number;
-  date: string;
-}
-
-export interface WorkoutData {
-  name: string;
-  exercises: { name: string; sets: number; reps: number; weight: number }[];
-}
-
 export const velleraApi = {
-  // Log user biometric wellness records
-  logBiometrics: async (data: BiometricData) => {
+  // Upload and track user biometric health logs
+  logBiometrics: async (data) => {
     const response = await api.post('/biometrics', data);
     return response.data;
   },
 
-  // Save custom workout templates
-  createWorkout: async (workout: WorkoutData) => {
+  // Save a brand new custom workout split
+  createWorkout: async (workout) => {
     const response = await api.post('/workouts', workout);
     return response.data;
   },
 
-  // Securely handshake and sync records to medical databases (FHIR)
-  syncWithDoctor: async (providerId: string) => {
+  // Request external medical/doctor dashboard sync
+  syncWithDoctor: async (providerId) => {
     const response = await api.post('/medical/sync', { providerId });
     return response.data;
   }
