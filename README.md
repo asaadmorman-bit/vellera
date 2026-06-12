@@ -1,39 +1,43 @@
-**Welcome to your Base44 project** 
+# Vellera Fitness App
 
-**About**
+Welcome to **Vellera**, an intelligent, comprehensive health and fitness tracking ecosystem designed to bridge the gap between workout optimization, nutrition patterns, and medical biometrics.
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+🌐 **Production URL:** [https://vellera.app](https://vellera.app)
 
-This project contains everything you need to run your app locally.
+---
 
-**Edit the code in your local development environment**
+## 🚀 Vision & Key Features
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+Vellera is evolving into a comprehensive wellness engine capable of securely processing personalized biometric data. Our development pipeline introduces:
 
-**Prerequisites:** 
+- **Custom Workout Architectures:** Create, manage, and scale fully tailored routine profiles.
+- **Biometric Calibration Engine:** Dynamically adapts user fitness goals and output suggestions based on imported health telemetry.
+- **Advanced Pattern Analytics:** Granular tracking matrices monitoring nutrition intake, macros, caloric deficit, and energy output cycles.
+- **EHR & Medical Sync:** Enterprise-grade integrations utilizing secure endpoints to sync biometric data histories seamlessly with medical professionals.
 
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
+---
 
-```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
+## 🛠️ Tech Stack & Prerequisites
 
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
-```
+The user interface layer is built with a highly performant, type-safe web framework:
 
-Run the app: `npm run dev`
+- **Build Tooling:** Vite
+- **Styling UI:** Tailwind CSS
+- **Programming Language:** TypeScript / JavaScript (ESLint configured)
 
-**Publish your changes**
+### Prerequisites
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+Ensure you have the following installed locally on your development system:
+- **Node.js** (v18.x or later recommended)
+- **npm** or **yarn**
 
-**Docs & Support**
+---
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+## 💻 Getting Started Locally
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+Follow these steps to spin up your local development server:
+
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/asaadmorman-bit/vellera.git](https://github.com/asaadmorman-bit/vellera.git)
+   cd vellera
